@@ -2,14 +2,16 @@ import React, { useState, useRef } from "react";
 import { useAuth } from "../context/AuthProvider";
 import ModelViewer from "../components/ModelViewer";
 import Header from "../components/Header";
+import ArViewer from "../components/ArViewer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { UploadCloud, Box, X } from "lucide-react"; // Changed File3d to Box
+import { UploadCloud, Box, X } from "lucide-react"; // Removed 'Cube' from this line
 
 export default function Home() {
   const { user, doLogout } = useAuth();
   const [modelUrl, setModelUrl] = useState(null);
   const [fileName, setFileName] = useState("");
+  const [isArMode, setIsArMode] = useState(false);
   const fileInputRef = useRef(null);
 
   const handleFileChange = (e) => {
@@ -18,6 +20,7 @@ export default function Home() {
       const url = URL.createObjectURL(file);
       setModelUrl(url);
       setFileName(file.name);
+      setIsArMode(false);
     }
   };
 
@@ -27,10 +30,16 @@ export default function Home() {
     }
     setModelUrl(null);
     setFileName("");
-    if(fileInputRef.current) {
-        fileInputRef.current.value = "";
+    setIsArMode(false);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
     }
   };
+
+  // If in AR mode, render the ArViewer and pass the exit function
+  if (isArMode && modelUrl) {
+    return <ArViewer modelUrl={modelUrl} onExit={() => setIsArMode(false)} />;
+  }
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-slate-50">
@@ -65,25 +74,31 @@ export default function Home() {
         ) : (
           <div className="w-full max-w-4xl">
             <Card className="w-full shadow-lg overflow-hidden">
-                <div className="bg-slate-100 p-3 flex items-center justify-between border-b">
-                    <div className="flex items-center gap-2">
-                        <Box className="h-5 w-5 text-slate-600"/> 
-                        <span className="text-sm font-medium text-slate-800">{fileName}</span>
-                    </div>
-                    <Button variant="ghost" size="icon" onClick={handleReset}>
-                        <X className="h-4 w-4"/>
-                    </Button>
+              <div className="bg-slate-100 p-3 flex items-center justify-between border-b">
+                <div className="flex items-center gap-2">
+                  <Box className="h-5 w-5 text-slate-600" />
+                  <span className="text-sm font-medium text-slate-800">
+                    {fileName}
+                  </span>
                 </div>
+                <Button variant="ghost" size="icon" onClick={handleReset}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
               <ModelViewer modelUrl={modelUrl} />
             </Card>
-            <div className="mt-4 text-center">
+            <div className="mt-4 text-center space-x-4">
               <Button
                 variant="outline"
                 onClick={() => fileInputRef.current?.click()}
               >
-                Upload a Different Model
+                Upload Different Model
               </Button>
-               <input
+              <Button onClick={() => setIsArMode(true)}>
+                <Box className="mr-2 h-4 w-4" /> {/* Replaced Cube with Box */}
+                View in AR
+              </Button>
+              <input
                 ref={fileInputRef}
                 type="file"
                 accept=".gltf,.glb"
