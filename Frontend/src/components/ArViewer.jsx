@@ -19,9 +19,12 @@ export default function ArViewer({ modelUrl, onExit }) {
   const placeCallbackRef = useRef(null);
   const arButtonElRef = useRef(null);
 
+  // immediate control flags (refs to avoid closure problems)
+  const placedRef = useRef(false);
+  const hitTestSourceRef = useRef(null);
+
   // Gesture state refs
   const raycasterRef = useRef(new THREE.Raycaster());
-  const lastTouchRef = useRef({}); // store touches by id
   const draggingRef = useRef(false);
   const pinchRef = useRef(false);
   const initialPinchDistanceRef = useRef(0);
@@ -31,7 +34,7 @@ export default function ArViewer({ modelUrl, onExit }) {
 
   useEffect(() => {
     let camera, scene, renderer;
-    let hitTestSource = null;
+    let hitTestSource = null; // local reference used for cancel
     let hitTestSourceRequested = false;
     const tmpMatrix = new THREE.Matrix4();
 
@@ -47,7 +50,7 @@ export default function ArViewer({ modelUrl, onExit }) {
         try {
           const loadedModel = gltf.scene || gltf.scenes?.[0] || new THREE.Group();
 
-          // compute bounding box & uniform scale
+          // bounding box & uniform scale
           const box = new THREE.Box3().setFromObject(loadedModel);
           const size = box.getSize(new THREE.Vector3());
           const maxDim = Math.max(size.x || 1, size.y || 1, size.z || 1);
@@ -55,11 +58,10 @@ export default function ArViewer({ modelUrl, onExit }) {
           const scale = desired / maxDim;
           loadedModel.scale.setScalar(scale);
 
-          // center the geometry after scaling
+          // center geometry
           const center = box.getCenter(new THREE.Vector3());
           loadedModel.position.sub(center.multiplyScalar(scale));
 
-          // wrapper ensures pose & manipulation apply to wrapper, not internals
           const wrapper = new THREE.Group();
           wrapper.add(loadedModel);
           wrapper.visible = false;
@@ -75,7 +77,7 @@ export default function ArViewer({ modelUrl, onExit }) {
 
       function onModelError(err) {
         console.error("GLTF loader error:", err);
-        alert(`Failed to load 3D model. Check console for details. ${err}`);
+        alert("Failed to load 3D model. Check console for details.");
       }
 
       try {
@@ -109,7 +111,7 @@ export default function ArViewer({ modelUrl, onExit }) {
             return;
           }
 
-          // fallback parse attempt
+          // fallback
           try {
             const buffer = await resp.arrayBuffer();
             loader.parse(buffer, "", onModelLoad, onModelError);
@@ -163,6 +165,7 @@ export default function ArViewer({ modelUrl, onExit }) {
         console.log("AR session started");
         setIsARActive(true);
         hitTestSourceRequested = false;
+        placedRef.current = false; // reset placed flag on new session
       });
 
       renderer.xr.addEventListener("sessionend", () => {
@@ -170,8 +173,15 @@ export default function ArViewer({ modelUrl, onExit }) {
         setIsARActive(false);
         setIsPlaceButtonVisible(false);
         setIsModelPlaced(false);
+        // cancel & clear hit test
+        try {
+          if (hitTestSource) {
+            hitTestSource.cancel();
+          }
+        } catch (e) {}
         hitTestSource = null;
         hitTestSourceRequested = false;
+        hitTestSourceRef.current = null;
 
         if (modelRef.current) {
           try {
@@ -195,38 +205,44 @@ export default function ArViewer({ modelUrl, onExit }) {
       renderer.setSize(window.innerWidth, window.innerHeight);
     }
 
-    // Lock model position (Place)
+    // Place model -> immediate effect via ref + cancel hits
     function placeModel() {
       if (!modelRef.current) return;
+      // cancel hit test so no further hit results arrive
+      try {
+        if (hitTestSource) {
+          hitTestSource.cancel();
+          hitTestSource = null;
+          hitTestSourceRef.current = null;
+        }
+      } catch (e) {
+        console.warn("hitTestSource.cancel error:", e);
+      }
+
+      placedRef.current = true; // immediate stop for render loop
       setIsModelPlaced(true);
       setIsPlaceButtonVisible(false);
     }
     placeCallbackRef.current = placeModel;
 
-    // Gesture helpers
     function getTouchPos(touch) {
       return { x: touch.clientX, y: touch.clientY };
     }
-
     function distanceBetweenTouches(t0, t1) {
       const dx = t1.clientX - t0.clientX;
       const dy = t1.clientY - t0.clientY;
       return Math.hypot(dx, dy);
     }
-
     function angleBetweenTouches(t0, t1) {
       return Math.atan2(t1.clientY - t0.clientY, t1.clientX - t0.clientX);
     }
 
-    // Touch handlers on canvas
     function onTouchStart(e) {
       if (!modelRef.current) return;
       e.preventDefault();
 
       if (e.touches.length === 1) {
         draggingRef.current = true;
-        const t = e.touches[0];
-        lastTouchRef.current = { id: t.identifier, x: t.clientX, y: t.clientY };
       } else if (e.touches.length === 2) {
         pinchRef.current = true;
         const t0 = e.touches[0], t1 = e.touches[1];
@@ -241,16 +257,13 @@ export default function ArViewer({ modelUrl, onExit }) {
       if (!modelRef.current || !renderer || !camera) return;
       e.preventDefault();
 
-      // One-finger drag -> move model along horizontal plane at model's y
       if (draggingRef.current && e.touches.length === 1) {
         const t = e.touches[0];
         const ndc = {
           x: (t.clientX / window.innerWidth) * 2 - 1,
           y: -(t.clientY / window.innerHeight) * 2 + 1,
         };
-        // raycast from camera through screen point
         raycasterRef.current.setFromCamera(ndc, camera);
-        // plane at model's current y (horizontal)
         const planeY = modelRef.current.position.y;
         const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -planeY);
         const intersect = new THREE.Vector3();
@@ -260,15 +273,12 @@ export default function ArViewer({ modelUrl, onExit }) {
         }
       }
 
-      // Two-finger pinch/rotate
       if (pinchRef.current && e.touches.length >= 2) {
         const t0 = e.touches[0], t1 = e.touches[1];
-        // scale
         const currDist = distanceBetweenTouches(t0, t1);
         if (initialPinchDistanceRef.current > 0) {
           const scaleFactor = currDist / initialPinchDistanceRef.current;
           const newScale = initialScaleRef.current.clone().multiplyScalar(scaleFactor);
-          // clamp scale to reasonable bounds
           const min = 0.05, max = 5;
           newScale.x = THREE.MathUtils.clamp(newScale.x, min, max);
           newScale.y = THREE.MathUtils.clamp(newScale.y, min, max);
@@ -276,22 +286,18 @@ export default function ArViewer({ modelUrl, onExit }) {
           modelRef.current.scale.copy(newScale);
         }
 
-        // rotation (around Y)
         const currAngle = angleBetweenTouches(t0, t1);
         const delta = currAngle - initialAngleRef.current;
-        // subtract delta so natural finger twist rotates model same direction
         modelRef.current.rotation.y = initialRotationYRef.current - delta;
       }
     }
 
     function onTouchEnd(e) {
       e.preventDefault();
-      // Reset states if no touches remain
       if (e.touches.length === 0) {
         draggingRef.current = false;
         pinchRef.current = false;
       } else if (e.touches.length === 1) {
-        // if one left, set dragging for single touch
         draggingRef.current = true;
         pinchRef.current = false;
       }
@@ -304,7 +310,8 @@ export default function ArViewer({ modelUrl, onExit }) {
         const session = renderer.xr.getSession();
         const referenceSpace = renderer.xr.getReferenceSpace ? renderer.xr.getReferenceSpace() : null;
 
-        if (!hitTestSourceRequested && session) {
+        // request hit-test once per session
+        if (!hitTestSourceRequested && session && !placedRef.current) {
           session
             .requestReferenceSpace("viewer")
             .then((refSpace) => {
@@ -312,6 +319,7 @@ export default function ArViewer({ modelUrl, onExit }) {
                 .requestHitTestSource({ space: refSpace })
                 .then((source) => {
                   hitTestSource = source;
+                  hitTestSourceRef.current = source;
                   console.log("hitTestSource ready");
                 })
                 .catch((err) => console.error("requestHitTestSource failed:", err));
@@ -320,8 +328,8 @@ export default function ArViewer({ modelUrl, onExit }) {
           hitTestSourceRequested = true;
         }
 
-        // update model preview from hit-test if model exists & not placed
-        if (hitTestSource && modelLoadedRef.current && !isModelPlaced) {
+        // update preview from hit-test only if not placed
+        if (hitTestSource && modelLoadedRef.current && !placedRef.current) {
           const hitTestResults = frame.getHitTestResults(hitTestSource);
           if (hitTestResults.length > 0) {
             const hit = hitTestResults[0];
@@ -332,7 +340,7 @@ export default function ArViewer({ modelUrl, onExit }) {
               const quat = new THREE.Quaternion();
               tmpMatrix.decompose(pos, quat, new THREE.Vector3());
 
-              // Only set position/quaternion if not currently dragging (so user manipulation isn't overridden)
+              // do not override while user is actively dragging/pinching
               if (!draggingRef.current && !pinchRef.current) {
                 modelRef.current.position.copy(pos);
                 modelRef.current.quaternion.copy(quat);
@@ -341,11 +349,11 @@ export default function ArViewer({ modelUrl, onExit }) {
               setIsPlaceButtonVisible(true);
             } else {
               setIsPlaceButtonVisible(false);
-              if (modelRef.current && !isModelPlaced) modelRef.current.visible = false;
+              if (modelRef.current && !placedRef.current) modelRef.current.visible = false;
             }
           } else {
             setIsPlaceButtonVisible(false);
-            if (modelRef.current && !isModelPlaced) modelRef.current.visible = false;
+            if (modelRef.current && !placedRef.current) modelRef.current.visible = false;
           }
         }
       }
@@ -353,11 +361,11 @@ export default function ArViewer({ modelUrl, onExit }) {
       renderer.render(scene, camera);
     }
 
-    // initialize
+    // initialize & start animation loop
     init();
     if (renderer) renderer.setAnimationLoop(render);
 
-    // attach touch listeners to canvas (prevent default to avoid scroll)
+    // attach touch listeners
     const canvas = canvasRef.current;
     if (canvas) {
       canvas.addEventListener("touchstart", onTouchStart, { passive: false });
@@ -366,7 +374,7 @@ export default function ArViewer({ modelUrl, onExit }) {
       canvas.addEventListener("touchcancel", onTouchEnd, { passive: false });
     }
 
-    // cleanup
+    // cleanup on unmount
     return () => {
       try {
         if (renderer) renderer.setAnimationLoop(null);
@@ -390,9 +398,9 @@ export default function ArViewer({ modelUrl, onExit }) {
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [modelUrl, isModelPlaced]);
+  }, [modelUrl]); // do NOT depend on isModelPlaced to avoid re-init on place
 
-  // ensure canvas occupies full screen and disables default gestures
+  // style canvas full-screen
   useEffect(() => {
     const c = canvasRef.current;
     if (c) {
