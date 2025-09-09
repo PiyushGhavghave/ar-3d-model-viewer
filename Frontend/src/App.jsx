@@ -9,11 +9,6 @@ import ProtectedRoute from "./components/ProtectedRoute";
 export default function App() {
   return (
     <div>
-      <nav style={{ padding: "1rem", borderBottom: "1px solid #ddd" }}>
-        <Link to="/">Home</Link>{" | "}
-        <Link to="/signup">Signup</Link>{" | "}
-        <Link to="/login">Login</Link>
-      </nav>
       <Routes>
         <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
         <Route path="/signup" element={<Signup />} />
