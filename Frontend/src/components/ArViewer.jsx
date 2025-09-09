@@ -19,19 +19,27 @@ export default function ArViewer({ modelUrl, onExit }) {
   const placeCallbackRef = useRef(null);
   const arButtonElRef = useRef(null);
 
+  // Gesture state refs
+  const raycasterRef = useRef(new THREE.Raycaster());
+  const lastTouchRef = useRef({}); // store touches by id
+  const draggingRef = useRef(false);
+  const pinchRef = useRef(false);
+  const initialPinchDistanceRef = useRef(0);
+  const initialScaleRef = useRef(new THREE.Vector3(1, 1, 1));
+  const initialAngleRef = useRef(0);
+  const initialRotationYRef = useRef(0);
+
   useEffect(() => {
     let camera, scene, renderer;
     let hitTestSource = null;
     let hitTestSourceRequested = false;
     const tmpMatrix = new THREE.Matrix4();
 
-    // Prepare DRACO loader (required for Draco-compressed GLTF/GLB)
+    // Prepare DRACO loader
     const dracoLoader = new DRACOLoader();
-    // Use Google's hosted decoders (works for most use-cases). You can serve locally if desired.
     dracoLoader.setDecoderPath("https://www.gstatic.com/draco/v1/decoders/");
 
     async function loadModel(urlOrFile) {
-      // Create GLTFLoader and attach dracoLoader
       const loader = new GLTFLoader();
       loader.setDRACOLoader(dracoLoader);
 
@@ -39,25 +47,26 @@ export default function ArViewer({ modelUrl, onExit }) {
         try {
           const loadedModel = gltf.scene || gltf.scenes?.[0] || new THREE.Group();
 
-          // compute bounding box & scale
+          // compute bounding box & uniform scale
           const box = new THREE.Box3().setFromObject(loadedModel);
           const size = box.getSize(new THREE.Vector3());
           const maxDim = Math.max(size.x || 1, size.y || 1, size.z || 1);
-          const desired = 0.3;
+          const desired = 0.3; // meters
           const scale = desired / maxDim;
           loadedModel.scale.setScalar(scale);
 
-          // center geometry
+          // center the geometry after scaling
           const center = box.getCenter(new THREE.Vector3());
           loadedModel.position.sub(center.multiplyScalar(scale));
 
+          // wrapper ensures pose & manipulation apply to wrapper, not internals
           const wrapper = new THREE.Group();
           wrapper.add(loadedModel);
           wrapper.visible = false;
           sceneRef.current.add(wrapper);
           modelRef.current = wrapper;
           modelLoadedRef.current = true;
-          console.log("Model loaded (with DRACO support) ✅");
+          console.log("Model loaded and ready");
         } catch (e) {
           console.error("onModelLoad error:", e);
           alert("Failed to prepare model. See console.");
@@ -186,12 +195,107 @@ export default function ArViewer({ modelUrl, onExit }) {
       renderer.setSize(window.innerWidth, window.innerHeight);
     }
 
+    // Lock model position (Place)
     function placeModel() {
       if (!modelRef.current) return;
       setIsModelPlaced(true);
       setIsPlaceButtonVisible(false);
     }
     placeCallbackRef.current = placeModel;
+
+    // Gesture helpers
+    function getTouchPos(touch) {
+      return { x: touch.clientX, y: touch.clientY };
+    }
+
+    function distanceBetweenTouches(t0, t1) {
+      const dx = t1.clientX - t0.clientX;
+      const dy = t1.clientY - t0.clientY;
+      return Math.hypot(dx, dy);
+    }
+
+    function angleBetweenTouches(t0, t1) {
+      return Math.atan2(t1.clientY - t0.clientY, t1.clientX - t0.clientX);
+    }
+
+    // Touch handlers on canvas
+    function onTouchStart(e) {
+      if (!modelRef.current) return;
+      e.preventDefault();
+
+      if (e.touches.length === 1) {
+        draggingRef.current = true;
+        const t = e.touches[0];
+        lastTouchRef.current = { id: t.identifier, x: t.clientX, y: t.clientY };
+      } else if (e.touches.length === 2) {
+        pinchRef.current = true;
+        const t0 = e.touches[0], t1 = e.touches[1];
+        initialPinchDistanceRef.current = distanceBetweenTouches(t0, t1);
+        initialScaleRef.current = modelRef.current.scale.clone();
+        initialAngleRef.current = angleBetweenTouches(t0, t1);
+        initialRotationYRef.current = modelRef.current.rotation.y;
+      }
+    }
+
+    function onTouchMove(e) {
+      if (!modelRef.current || !renderer || !camera) return;
+      e.preventDefault();
+
+      // One-finger drag -> move model along horizontal plane at model's y
+      if (draggingRef.current && e.touches.length === 1) {
+        const t = e.touches[0];
+        const ndc = {
+          x: (t.clientX / window.innerWidth) * 2 - 1,
+          y: -(t.clientY / window.innerHeight) * 2 + 1,
+        };
+        // raycast from camera through screen point
+        raycasterRef.current.setFromCamera(ndc, camera);
+        // plane at model's current y (horizontal)
+        const planeY = modelRef.current.position.y;
+        const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -planeY);
+        const intersect = new THREE.Vector3();
+        const intersected = raycasterRef.current.ray.intersectPlane(plane, intersect);
+        if (intersected) {
+          modelRef.current.position.copy(intersect);
+        }
+      }
+
+      // Two-finger pinch/rotate
+      if (pinchRef.current && e.touches.length >= 2) {
+        const t0 = e.touches[0], t1 = e.touches[1];
+        // scale
+        const currDist = distanceBetweenTouches(t0, t1);
+        if (initialPinchDistanceRef.current > 0) {
+          const scaleFactor = currDist / initialPinchDistanceRef.current;
+          const newScale = initialScaleRef.current.clone().multiplyScalar(scaleFactor);
+          // clamp scale to reasonable bounds
+          const min = 0.05, max = 5;
+          newScale.x = THREE.MathUtils.clamp(newScale.x, min, max);
+          newScale.y = THREE.MathUtils.clamp(newScale.y, min, max);
+          newScale.z = THREE.MathUtils.clamp(newScale.z, min, max);
+          modelRef.current.scale.copy(newScale);
+        }
+
+        // rotation (around Y)
+        const currAngle = angleBetweenTouches(t0, t1);
+        const delta = currAngle - initialAngleRef.current;
+        // subtract delta so natural finger twist rotates model same direction
+        modelRef.current.rotation.y = initialRotationYRef.current - delta;
+      }
+    }
+
+    function onTouchEnd(e) {
+      e.preventDefault();
+      // Reset states if no touches remain
+      if (e.touches.length === 0) {
+        draggingRef.current = false;
+        pinchRef.current = false;
+      } else if (e.touches.length === 1) {
+        // if one left, set dragging for single touch
+        draggingRef.current = true;
+        pinchRef.current = false;
+      }
+    }
 
     function render(timestamp, frame) {
       if (!renderer) return;
@@ -216,6 +320,7 @@ export default function ArViewer({ modelUrl, onExit }) {
           hitTestSourceRequested = true;
         }
 
+        // update model preview from hit-test if model exists & not placed
         if (hitTestSource && modelLoadedRef.current && !isModelPlaced) {
           const hitTestResults = frame.getHitTestResults(hitTestSource);
           if (hitTestResults.length > 0) {
@@ -227,10 +332,12 @@ export default function ArViewer({ modelUrl, onExit }) {
               const quat = new THREE.Quaternion();
               tmpMatrix.decompose(pos, quat, new THREE.Vector3());
 
-              modelRef.current.position.copy(pos);
-              modelRef.current.quaternion.copy(quat);
+              // Only set position/quaternion if not currently dragging (so user manipulation isn't overridden)
+              if (!draggingRef.current && !pinchRef.current) {
+                modelRef.current.position.copy(pos);
+                modelRef.current.quaternion.copy(quat);
+              }
               modelRef.current.visible = true;
-
               setIsPlaceButtonVisible(true);
             } else {
               setIsPlaceButtonVisible(false);
@@ -246,8 +353,18 @@ export default function ArViewer({ modelUrl, onExit }) {
       renderer.render(scene, camera);
     }
 
+    // initialize
     init();
     if (renderer) renderer.setAnimationLoop(render);
+
+    // attach touch listeners to canvas (prevent default to avoid scroll)
+    const canvas = canvasRef.current;
+    if (canvas) {
+      canvas.addEventListener("touchstart", onTouchStart, { passive: false });
+      canvas.addEventListener("touchmove", onTouchMove, { passive: false });
+      canvas.addEventListener("touchend", onTouchEnd, { passive: false });
+      canvas.addEventListener("touchcancel", onTouchEnd, { passive: false });
+    }
 
     // cleanup
     return () => {
@@ -257,21 +374,25 @@ export default function ArViewer({ modelUrl, onExit }) {
           arButtonElRef.current.parentNode.removeChild(arButtonElRef.current);
         }
         window.removeEventListener("resize", onWindowResize);
+        if (canvas) {
+          canvas.removeEventListener("touchstart", onTouchStart);
+          canvas.removeEventListener("touchmove", onTouchMove);
+          canvas.removeEventListener("touchend", onTouchEnd);
+          canvas.removeEventListener("touchcancel", onTouchEnd);
+        }
         if (renderer) renderer.dispose();
       } catch (e) {
         console.warn("cleanup error:", e);
       } finally {
-        // dispose draco loader
         try {
           dracoLoader.dispose();
-        } catch (e) {
-          /* ignore */
-        }
+        } catch (e) {}
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [modelUrl, isModelPlaced]);
 
+  // ensure canvas occupies full screen and disables default gestures
   useEffect(() => {
     const c = canvasRef.current;
     if (c) {
