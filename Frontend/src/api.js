@@ -55,3 +55,12 @@ export const verifyEmail = (verificationToken, verificationCode) =>
 export const logout = () => client.post("/api/v1/auth/logout");
 
 export const getUser = () => client.get("/api/v1/user/get-user");
+
+export const updateUserProfile = (profileData) => 
+  client.put("/api/v1/user/update-profile", profileData);
+
+export const sendChangePasswordCode = () => 
+  client.post("/api/v1/auth/send-change-password-code");
+
+export const changePassword = (resetCode, newPassword) =>
+  client.post("/api/v1/auth/reset-password", { resetCode, newPassword });
