@@ -23,12 +23,26 @@ const userSchema = new mongoose.Schema({
       required: [true, 'Password is required'],
       minlength: [6, 'Password must be at least 6 characters']
     },
+    profilePicture: {
+        type: String,
+        default: ''
+    },
+    city: {
+        type: String,
+        default: ''
+    },
+    country: {
+        type: String,
+        default: ''
+    },
     isVerified: {
       type: Boolean,
       default: false
     },
     verificationToken: String,
-    verificationTokenExpires: Date
+    verificationTokenExpires: Date,
+    passwordResetToken: String,
+    passwordResetExpires: Date
 }, {timestamps: true});
 
 // Hash password before saving in DB
@@ -66,6 +80,14 @@ userSchema.methods.generateVerificationCode = function() {
     this.verificationToken = crypto.createHash("sha256").update(code).digest("hex");
   this.verificationTokenExpires = Date.now() + 5 * 60 * 60 * 1000; // 5 hours
     return code; // return plain code to send via email
+}
+
+// generate password reset token
+userSchema.methods.generatePasswordResetToken = function () {
+    const resetToken = crypto.randomBytes(20).toString('hex');
+    this.passwordResetToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+    this.passwordResetExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
+    return resetToken;
 }
 
 
