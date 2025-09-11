@@ -78,16 +78,16 @@ userSchema.methods.generateAccessToken = function() {
 userSchema.methods.generateVerificationCode = function() {
     const code = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit code
     this.verificationToken = crypto.createHash("sha256").update(code).digest("hex");
-  this.verificationTokenExpires = Date.now() + 5 * 60 * 60 * 1000; // 5 hours
+    this.verificationTokenExpires = Date.now() + 5 * 60 * 60 * 1000; // 5 hours
     return code; // return plain code to send via email
 }
 
 // generate password reset token
 userSchema.methods.generatePasswordResetToken = function () {
-    const resetToken = crypto.randomBytes(20).toString('hex');
-    this.passwordResetToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+    const resetToken = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit code
+    this.passwordResetToken = crypto.createHash("sha256").update(resetToken).digest("hex");
     this.passwordResetExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
-    return resetToken;
+    return resetToken; // return plain code to send via email
 }
 
 

@@ -2,7 +2,7 @@ import User from "../models/users.model.js"
 import {asyncHandler} from "../utils/asyncHandler.js"
 import { apiResponse } from "../utils/apiResponse.js";
 import { apiError } from "../utils/apiError.js";
-import getEmailTemplate from "../utils/emailTemplate.js";
+import {getEmailTemplate, passwordResetTemplate} from "../utils/emailTemplate.js";
 import sendEmail from "../config/sendEmail.js";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
@@ -209,4 +209,63 @@ const logout = asyncHandler(async (req, res) => {
         .json(new apiResponse(200, {}, "Logout successful"));
 })
 
-export { signup, verifyEmail, login, logout };
+const sendChangePasswordCode = asyncHandler(async (req, res) => {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+        throw new apiError(404, "User not found");
+    }
+
+    const resetToken = user.generatePasswordResetToken();
+    await user.save({ validateBeforeSave: false });
+
+    // Send password reset email
+    const emailHTML = passwordResetTemplate(user.username, resetToken);
+    await sendEmail({
+        to: user.email,
+        subject: "Reset your password - Code valid for 10 minutes",
+        html: emailHTML
+    });
+
+    return res.status(200)
+    .json(
+        new apiResponse(200, {}, "Password reset code sent to email")
+    );
+});
+
+const resetPassword = asyncHandler(async (req, res) => {
+    const { resetCode, newPassword } = req.body;
+    if(! resetCode){
+        throw new apiError(400, "Reset code is required");
+    }
+    if(! newPassword){
+        throw new apiError(400, "New password is required");
+    }
+
+    const user = await User.findById(req.user._id);
+    if (!user) {
+        throw new apiError(404, "User not found");
+    }
+
+    if (!user.passwordResetToken || !user.passwordResetExpires) {
+        throw new apiError(400, "No reset code found. Please request a new one.");
+    }
+    if (user.passwordResetExpires < Date.now()) {
+        throw new apiError(400, "Reset code expired. Please request a new one.");
+    }
+    const hashedCode = crypto.createHash("sha256").update(resetCode).digest("hex");
+    if (hashedCode !== user.passwordResetToken) {
+        throw new apiError(400, "Invalid reset code");
+    }
+
+    user.password = newPassword;
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    await user.save();
+
+    return res.status(200)
+    .json(
+        new apiResponse(200, {}, "Password reset successful.")
+    );
+});
+
+export { signup, verifyEmail, login, logout, sendChangePasswordCode, resetPassword };
