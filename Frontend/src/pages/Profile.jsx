@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthProvider';
 import * as api from '../api';
+import axios from 'axios'; // Import axios for Cloudinary upload
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import Header from '../components/Header';
-import { User, Lock } from 'lucide-react';
+import { User, Lock, Upload } from 'lucide-react';
 
 export default function Profile() {
   const { user, setUser, doLogout } = useAuth();
@@ -21,6 +22,9 @@ export default function Profile() {
     resetCode: '',
     newPassword: '',
   });
+
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState('');
   
   const [activeTab, setActiveTab] = useState('profile');
   const [step, setStep] = useState(1);
@@ -35,6 +39,7 @@ export default function Profile() {
         city: user.city || '',
         country: user.country || '',
       });
+      setImagePreview(user.profilePicture || '');
     }
   }, [user]);
 
@@ -46,14 +51,41 @@ export default function Profile() {
     setPasswordForm({ ...passwordForm, [e.target.name]: e.target.value });
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
+      setImagePreview(URL.createObjectURL(file));
+    }
+  };
+
   const handleProfileSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setMessage({ type: '', text: '' });
+
+    let updatedProfileData = { ...profileForm };
+
     try {
-      const data = await api.updateUserProfile(profileForm);
-      setUser(data.user);
+      // If a new image file is selected, upload it to Cloudinary first
+      if (imageFile) {
+        const formData = new FormData();
+        formData.append('file', imageFile);
+        formData.append('upload_preset', import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET);
+
+        const response = await axios.post(
+          `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`,
+          formData
+        );
+        
+        updatedProfileData.profilePicture = response.data.secure_url;
+      }
+
+      // Now, update the user profile with our backend
+      const data = await api.updateUserProfile(updatedProfileData);
+      setUser(data.user); // Update user in context
       setMessage({ type: 'success', text: 'Profile updated successfully!' });
+      setImageFile(null); // Reset file input state
     } catch (err) {
       setMessage({ type: 'error', text: err.message || 'Failed to update profile.' });
     } finally {
@@ -139,10 +171,10 @@ export default function Profile() {
             {activeTab === 'profile' && (
               <form onSubmit={handleProfileSubmit} className="space-y-6">
                 <div className="flex items-center space-x-4">
-                    <img src={profileForm.profilePicture || `https://ui-avatars.com/api/?name=${user.username}&background=random`} alt="Profile" className="h-20 w-20 rounded-full object-cover" />
+                    <img src={imagePreview || `https://ui-avatars.com/api/?name=${user.username}&background=random`} alt="Profile" className="h-20 w-20 rounded-full object-cover" />
                     <div className="flex-grow space-y-2">
-                        <Label htmlFor="profilePicture">Profile Picture URL</Label>
-                        <Input id="profilePicture" name="profilePicture" type="text" value={profileForm.profilePicture} onChange={handleProfileChange} placeholder="https://example.com/image.png"/>
+                        <Label htmlFor="profilePicture">Change Profile Picture</Label>
+                        <Input id="profilePicture" name="profilePicture" type="file" accept="image/*" onChange={handleImageChange} className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
                     </div>
                 </div>
                 <div className="space-y-2">
@@ -194,7 +226,7 @@ export default function Profile() {
                         <Button type="submit" disabled={loading}>
                           {loading ? 'Changing...' : 'Change Password'}
                         </Button>
-                         <Button type="button" variant="outline" onClick={() => setStep(1)}>
+                         <Button type="button" variant="outline" onClick={() => { setStep(1); setMessage({type:'', text:''}); }}>
                           Back
                         </Button>
                     </div>
