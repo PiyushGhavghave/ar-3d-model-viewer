@@ -1,18 +1,11 @@
 import React from 'react';
 import ModelViewer from './ModelViewer';
-import ArViewer from './ArViewer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { X, Box } from 'lucide-react';
 
-export default function ModelViewModal({ model, onClose }) {
-  const [isArMode, setIsArMode] = React.useState(false);
-
+export default function ModelViewModal({ model, onClose, onEnterAr }) {
   if (!model) return null;
-
-  if (isArMode) {
-    return <ArViewer modelUrl={model.modelUrl} onExit={() => setIsArMode(false)} />;
-  }
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
@@ -29,7 +22,7 @@ export default function ModelViewModal({ model, onClose }) {
             <ModelViewer modelUrl={model.modelUrl} />
           </div>
           <div className="mt-4 flex justify-end">
-            <Button onClick={() => setIsArMode(true)}>
+            <Button onClick={() => onEnterAr(model.modelUrl)}>
               <Box className="mr-2 h-4 w-4" />
               View in AR
             </Button>
