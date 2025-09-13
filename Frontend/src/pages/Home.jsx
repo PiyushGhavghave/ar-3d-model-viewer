@@ -1,114 +1,131 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "../context/AuthProvider";
-import ModelViewer from "../components/ModelViewer";
+import * as api from "../api";
 import Header from "../components/Header";
-import ArViewer from "../components/ArViewer";
+import ModelViewModal from "../components/ModelViewModal";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { UploadCloud, Box, X } from "lucide-react"; // Removed 'Cube' from this line
+import { Card } from "@/components/ui/card";
+import { PlusCircle, Trash2, MoreVertical } from "lucide-react"; // Import MoreVertical
+import { Link } from "react-router-dom";
 
 export default function Home() {
-  const { user, doLogout } = useAuth();
-  const [modelUrl, setModelUrl] = useState(null);
-  const [fileName, setFileName] = useState("");
-  const [isArMode, setIsArMode] = useState(false);
-  const fileInputRef = useRef(null);
+    const { user, doLogout } = useAuth();
+    const [models, setModels] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+    const [selectedModel, setSelectedModel] = useState(null);
+    const [openMenuId, setOpenMenuId] = useState(null); // State to track which menu is open
+    const menuRef = useRef(null);
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const url = URL.createObjectURL(file);
-      setModelUrl(url);
-      setFileName(file.name);
-      setIsArMode(false);
-    }
-  };
+    // Effect to close menu when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (menuRef.current && !menuRef.current.contains(event.target)) {
+                setOpenMenuId(null);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
 
-  const handleReset = () => {
-    if (modelUrl) {
-      URL.revokeObjectURL(modelUrl);
-    }
-    setModelUrl(null);
-    setFileName("");
-    setIsArMode(false);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  };
+    useEffect(() => {
+        const fetchModels = async () => {
+            try {
+                const data = await api.getAllModels();
+                setModels(data);
+            } catch (err) {
+                setError(err.message || 'Failed to fetch your models.');
+            } finally {
+                setLoading(false);
+            }
+        };
+        if (user) {
+            fetchModels();
+        }
+    }, [user]);
 
-  // If in AR mode, render the ArViewer and pass the exit function
-  if (isArMode && modelUrl) {
-    return <ArViewer modelUrl={modelUrl} onExit={() => setIsArMode(false)} />;
-  }
+    const handleDelete = async (e, modelId) => {
+        e.stopPropagation();
+        setOpenMenuId(null); // Close the menu
 
-  return (
-    <div className="flex min-h-screen w-full flex-col bg-slate-50">
-      <Header onLogout={doLogout} appName="3D AR Model Viewer" />
+        if (window.confirm("Are you sure you want to delete this model? This action cannot be undone.")) {
+            try {
+                await api.deleteModel(modelId);
+                setModels(prevModels => prevModels.filter(model => model._id !== modelId));
+            } catch (err) {
+                setError(err.message || 'Failed to delete the model.');
+            }
+        }
+    };
 
-      <main className="flex-grow container mx-auto p-4 md:p-8 flex flex-col items-center justify-center">
-        {!modelUrl ? (
-          <Card className="w-full max-w-lg text-center shadow-lg border-dashed border-2">
-            <CardContent className="p-10">
-              <UploadCloud className="mx-auto h-16 w-16 text-slate-400" />
-              <h2 className="mt-4 text-xl font-semibold text-slate-700">
-                Upload your 3D Model
-              </h2>
-              <p className="mt-2 text-sm text-slate-500">
-                Supports .gltf and .glb files.
-              </p>
-              <Button
-                className="mt-6"
-                onClick={() => fileInputRef.current?.click()}
-              >
-                Browse Files
-              </Button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".gltf,.glb"
-                onChange={handleFileChange}
-                className="hidden"
-              />
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="w-full max-w-4xl">
-            <Card className="w-full shadow-lg overflow-hidden">
-              <div className="bg-slate-100 p-3 flex items-center justify-between border-b">
-                <div className="flex items-center gap-2">
-                  <Box className="h-5 w-5 text-slate-600" />
-                  <span className="text-sm font-medium text-slate-800">
-                    {fileName}
-                  </span>
-                </div>
-                <Button variant="ghost" size="icon" onClick={handleReset}>
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-              <ModelViewer modelUrl={modelUrl} />
-            </Card>
-            <div className="mt-4 text-center space-x-4">
-              <Button
-                variant="outline"
-                onClick={() => fileInputRef.current?.click()}
-              >
-                Upload Different Model
-              </Button>
-              <Button onClick={() => setIsArMode(true)}>
-                <Box className="mr-2 h-4 w-4" /> {/* Replaced Cube with Box */}
-                View in AR
-              </Button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".gltf,.glb"
-                onChange={handleFileChange}
-                className="hidden"
-              />
-            </div>
-          </div>
-        )}
-      </main>
-    </div>
-  );
+    const toggleMenu = (e, modelId) => {
+        e.stopPropagation(); // Prevent modal from opening
+        setOpenMenuId(openMenuId === modelId ? null : modelId);
+    };
+
+    return (
+        <div className="flex min-h-screen w-full flex-col bg-slate-50">
+            <Header onLogout={doLogout} appName="My 3D Models" />
+            <main className="flex-grow container mx-auto p-4 md:p-8">
+                {loading && <p className="text-center">Loading your models...</p>}
+                {error && <p className="text-center text-red-500">{error}</p>}
+                
+                {!loading && !error && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                        {models.map(model => (
+                            <Card 
+                                key={model._id} 
+                                className="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow group relative"
+                                onClick={() => setSelectedModel(model)}
+                            >
+                                {/* --- UPDATED: Options Menu --- */}
+                                {user && user._id === model.user && (
+                                    <div className="absolute top-2 right-2 z-10" ref={openMenuId === model._id ? menuRef : null}>
+                                        <Button 
+                                            variant="ghost" 
+                                            size="icon" 
+                                            className="h-8 w-8 rounded-full"
+                                            onClick={(e) => toggleMenu(e, model._id)}
+                                        >
+                                            <MoreVertical className="h-4 w-4" />
+                                        </Button>
+                                        {openMenuId === model._id && (
+                                            <div className="absolute right-0 mt-2 w-40 bg-white rounded-md shadow-lg border z-20">
+                                                <Button 
+                                                    variant="ghost" 
+                                                    className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+                                                    onClick={(e) => handleDelete(e, model._id)}
+                                                >
+                                                    <Trash2 className="h-4 w-4 mr-2" />
+                                                    Delete
+                                                </Button>
+                                                {/* You can add more options here in the future */}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                                {/* --- End of Update --- */}
+
+                                <div className="aspect-square bg-slate-100 overflow-hidden">
+                                   <img 
+                                    src={model.thumbnailUrl} 
+                                    alt={model.title} 
+                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                   />
+                                </div>
+                                <div className="p-4">
+                                    <h3 className="font-semibold truncate">{model.title}</h3>
+                                    <p className="text-xs text-slate-500">Uploaded by you</p>
+                                </div>
+                            </Card>
+                        ))}
+                    </div>
+                )}
+            </main>
+
+            {selectedModel && <ModelViewModal model={selectedModel} onClose={() => setSelectedModel(null)} />}
+        </div>
+    );
 }
