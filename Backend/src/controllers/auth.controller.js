@@ -112,7 +112,7 @@ const verifyEmail = asyncHandler(async (req, res) => {
             {
                 token: loginToken, 
                 user: { 
-                    id: user._id, 
+                    _id: user._id, 
                     username: user.username, 
                     email: user.email 
                 } 
@@ -160,7 +160,7 @@ const login = asyncHandler(async (req, res) => {
                 {
                     token: loginToken,
                     user: {
-                        id: user._id,
+                        _id: user._id,
                         username: user.username,
                         email: user.email
                     }
