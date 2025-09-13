@@ -4,11 +4,11 @@ import { apiResponse } from "../utils/apiResponse.js";
 import { apiError } from "../utils/apiError.js";
 import { deleteFromCloudinary } from "../utils/cloudinary.js";
 
-
 const uploadModel = asyncHandler(async (req, res) => {
-    const { title, description, modelUrl, modelPublicId, thumbnailUrl, thumbnailPublicId } = req.body;
+    // The frontend will now provide the auto-generated thumbnailUrl
+    const { title, description, modelUrl, modelPublicId, thumbnailUrl } = req.body;
 
-    if (!title || !modelUrl || !modelPublicId || !thumbnailUrl || !thumbnailPublicId) {
+    if (!title || !modelUrl || !modelPublicId || !thumbnailUrl) {
         throw new apiError(400, "All fields are required to upload a model");
     }
 
@@ -18,8 +18,7 @@ const uploadModel = asyncHandler(async (req, res) => {
         description,
         modelUrl,
         modelPublicId,
-        thumbnailUrl,
-        thumbnailPublicId
+        thumbnailUrl
     });
 
     return res.status(201)
@@ -28,38 +27,28 @@ const uploadModel = asyncHandler(async (req, res) => {
     );
 });
 
-
 const getUserModels = asyncHandler(async (req, res) => {
     const models = await Model.find({ user: req.user._id }).sort({ createdAt: -1 });
-
     return res.status(200)
     .json(
         new apiResponse(200, models, "Your models fetched successfully")
     );
 });
 
-
 const deleteModel = asyncHandler(async (req, res) => {
-    const modelId = req.params.id;
-    if(!modelId){
-        throw new apiError(400, "Model ID is required");
-    }
+    const model = await Model.findById(req.params.id);
 
-    const model = await Model.findById(modelId);
     if (!model) {
         throw new apiError(404, "Model not found");
     }
 
-    // Ensure the user owns the model
     if (model.user.toString() !== req.user._id.toString()) {
         throw new apiError(401, "You are not authorized to delete this model");
     }
 
-    // Delete model and thumbnail from Cloudinary
-    await deleteFromCloudinary(model.modelPublicId, "raw"); // 3D models are often stored as 'raw' files
-    await deleteFromCloudinary(model.thumbnailPublicId, "image");
+    // thumbnail is derived from the model, we only need to delete the raw model file.
+    await deleteFromCloudinary(model.modelPublicId, "raw"); 
 
-    // Delete the model from the database
     await model.deleteOne();
 
     return res.status(200).json(new apiResponse(200, { id: req.params.id }, "Model deleted successfully"));

@@ -26,10 +26,6 @@ const modelSchema = new mongoose.Schema({
     thumbnailUrl: {
         type: String, 
         required: [true, 'Thumbnail URL is required']
-    },
-    thumbnailPublicId: { // To store the ID for Cloudinary deletion
-        type: String,
-        required: true
     }
 }, { timestamps: true });
 
