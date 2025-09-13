@@ -5,8 +5,7 @@ import Header from "../components/Header";
 import ModelViewModal from "../components/ModelViewModal";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { PlusCircle, Trash2, MoreVertical } from "lucide-react"; // Import MoreVertical
-import { Link } from "react-router-dom";
+import { Trash2, MoreVertical } from "lucide-react"; // Import MoreVertical
 
 export default function Home() {
     const { user, doLogout } = useAuth();
@@ -80,7 +79,6 @@ export default function Home() {
                                 className="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow group relative"
                                 onClick={() => setSelectedModel(model)}
                             >
-                                {/* --- UPDATED: Options Menu --- */}
                                 {user && user._id === model.user && (
                                     <div className="absolute top-2 right-2 z-10" ref={openMenuId === model._id ? menuRef : null}>
                                         <Button 
@@ -101,12 +99,10 @@ export default function Home() {
                                                     <Trash2 className="h-4 w-4 mr-2" />
                                                     Delete
                                                 </Button>
-                                                {/* You can add more options here in the future */}
                                             </div>
                                         )}
                                     </div>
                                 )}
-                                {/* --- End of Update --- */}
 
                                 <div className="aspect-square bg-slate-100 overflow-hidden">
                                    <img 
