@@ -70,3 +70,5 @@ export const getAllModels = () => client.get("/api/v1/models/my-models");
 export const uploadModel = (modelData) => client.post("/api/v1/models/upload", modelData);
 
 export const deleteModel = (modelId) => client.delete(`/api/v1/models/${modelId}`);
+
+export const getModelById = (modelId) => client.get(`/api/v1/models/${modelId}`);

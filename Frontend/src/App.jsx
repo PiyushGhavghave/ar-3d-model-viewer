@@ -7,6 +7,7 @@ import Home from "./pages/Home";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Profile from "./pages/Profile";
 import UploadModel from "./pages/UploadModel";
+import ARPage from "./pages/ARPage";
 
 export default function App() {
   return (
@@ -18,6 +19,7 @@ export default function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
         <Route path="/verify-email" element={<VerifyEmail />} />
+        <Route path="/ar/:modelId" element={<ARPage />} />
       </Routes>
     </div>
   );
