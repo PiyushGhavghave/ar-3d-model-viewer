@@ -54,4 +54,14 @@ const deleteModel = asyncHandler(async (req, res) => {
     return res.status(200).json(new apiResponse(200, { id: req.params.id }, "Model deleted successfully"));
 });
 
-export { uploadModel, getUserModels, deleteModel };
+const getModelById = asyncHandler(async (req, res) => {
+    const model = await Model.findById(req.params.id);
+
+    if (!model) {
+        throw new apiError(404, "Model not found");
+    }
+
+    return res.status(200).json(new apiResponse(200, model, "Model fetched successfully"));
+});
+
+export { uploadModel, getUserModels, deleteModel, getModelById };

@@ -1,14 +1,15 @@
 import { Router } from "express";
-import { uploadModel, getUserModels, deleteModel } from "../controllers/models.controllers.js";
+import { uploadModel, getUserModels, deleteModel, getModelById } from "../controllers/models.controllers.js";
 import verifyJWT from "../middlewares/auth.middleware.js";
+
 
 const router = Router();
 
-// All model routes should be protected
-router.use(verifyJWT);
 
-router.route("/upload").post(uploadModel);
-router.route("/my-models").get(getUserModels);
-router.route("/:id").delete(deleteModel);
+router.post("/upload", verifyJWT, uploadModel);
+router.get("/my-models", verifyJWT, getUserModels);
+router.delete("/:id", verifyJWT, deleteModel);
+
+router.get("/:id", getModelById);
 
 export default router;
