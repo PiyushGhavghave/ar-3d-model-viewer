@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { signup , verifyEmail, login, logout, sendChangePasswordCode, resetPassword} from "../controllers/auth.controller.js";
+import { signup , verifyEmail, login, verifyTwoFactorLogin, logout, sendChangePasswordCode, resetPassword} from "../controllers/auth.controller.js";
 import verifyJWT from "../middlewares/auth.middleware.js";
 
 const router = Router();
@@ -7,6 +7,7 @@ const router = Router();
 router.post("/signup", signup);
 router.post("/verify-email", verifyEmail);
 router.post("/login", login);
+router.post("/verify-2fa", verifyTwoFactorLogin);
 
 router.post("/logout", verifyJWT, logout);
 router.post("/send-change-password-code", verifyJWT, sendChangePasswordCode);

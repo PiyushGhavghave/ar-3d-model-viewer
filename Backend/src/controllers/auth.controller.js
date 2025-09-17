@@ -6,6 +6,7 @@ import {getEmailTemplate, passwordResetTemplate} from "../utils/emailTemplate.js
 import sendEmail from "../config/sendEmail.js";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
+import { authenticator } from "otplib";
 
 const signup = asyncHandler(async (req, res) => {
     const { username, email, password } = req.body;
@@ -142,6 +143,22 @@ const login = asyncHandler(async (req, res) => {
         throw new apiError(401, "User credentials are invalid");
     }
 
+    // Check if 2FA is enabled
+    if (user.isTwoFactorEnabled) {
+        // User has 2FA enabled, so we don't log them in yet.
+        // We issue a temporary token that is only valid for 2FA verification.
+        const tempToken = jwt.sign(
+            { userId: user._id, purpose: "2fa_verification" },
+            process.env.ACCESS_TOKEN_SECRET,
+            { expiresIn: "5m" } // Short expiry
+        );
+        return res.status(200).json(new apiResponse(
+            200, 
+            { twoFactorRequired: true, tempToken }, 
+            "2FA token required"
+        ));
+    }
+
     if(user.isVerified){
         // User is verified, proceed with login
 
@@ -196,6 +213,62 @@ const login = asyncHandler(async (req, res) => {
             new apiResponse(200, { verificationToken: tempToken }, "Verification code sent to email")
         );
     }
+});
+
+const verifyTwoFactorLogin = asyncHandler(async (req, res) => {
+    const { token, tempToken } = req.body;
+    if (!token || !tempToken){
+        throw new apiError(400, "Both 2FA token and temporary session token are required");
+    }
+
+    let payload;
+    try {
+        payload = jwt.verify(tempToken, process.env.ACCESS_TOKEN_SECRET);
+    } catch (err) {
+        throw new apiError(401, "Invalid or expired session token");
+    }
+
+    if (payload.purpose !== '2fa_verification' || !payload.userId) {
+        throw new apiError(401, "Invalid token purpose");
+    }
+
+    const user = await User.findById(payload.userId);
+    if (!user){
+        throw new apiError(404, "User not found");
+    }
+
+    if (!user.twoFactorSecret) {
+        throw new apiError(400, "2FA secret not found or not generated yet");
+    }
+
+    const isValid = authenticator.verify({ token, secret: user.twoFactorSecret });
+    if (!isValid) {
+        throw new apiError(400, "Invalid 2FA token");
+    }
+
+    // 2FA is valid, now log the user in completely
+    const loginToken = user.generateAccessToken();
+    const options = { 
+        httpOnly: true, 
+        secure: true 
+    };
+
+    return res.status(200)
+    .cookie("accessToken", loginToken, options)
+    .json(
+        new apiResponse(
+            200, 
+            { 
+                token: loginToken, 
+                user: { 
+                    _id: user._id,
+                    username: user.username,
+                    email: user.email
+                }
+            },
+            "Login successful"
+        )
+    );
 });
 
 const logout = asyncHandler(async (req, res) => {
@@ -268,4 +341,4 @@ const resetPassword = asyncHandler(async (req, res) => {
     );
 });
 
-export { signup, verifyEmail, login, logout, sendChangePasswordCode, resetPassword };
+export { signup, verifyEmail, login, verifyTwoFactorLogin, logout, sendChangePasswordCode, resetPassword };
