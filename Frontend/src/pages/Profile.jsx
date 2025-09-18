@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthProvider';
 import * as api from '../api';
-import axios from 'axios'; // Import axios for Cloudinary upload
+import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import Header from '../components/Header';
-import { User, Lock, Upload } from 'lucide-react';
+import { User, Lock, ShieldCheck } from 'lucide-react';
 
 export default function Profile() {
   const { user, setUser, doLogout } = useAuth();
@@ -25,11 +25,14 @@ export default function Profile() {
 
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState('');
-  
   const [activeTab, setActiveTab] = useState('profile');
-  const [step, setStep] = useState(1);
   const [message, setMessage] = useState({ type: '', text: '' });
   const [loading, setLoading] = useState(false);
+  const [passwordStep, setPasswordStep] = useState(1);
+  
+  const [twoFactorStep, setTwoFactorStep] = useState('initial'); // initial, generate, verify, disable
+  const [qrCodeUrl, setQrCodeUrl] = useState('');
+  const [twoFactorCode, setTwoFactorCode] = useState('');
 
   useEffect(() => {
     if (user) {
@@ -43,14 +46,8 @@ export default function Profile() {
     }
   }, [user]);
 
-  const handleProfileChange = (e) => {
-    setProfileForm({ ...profileForm, [e.target.name]: e.target.value });
-  };
-
-  const handlePasswordChange = (e) => {
-    setPasswordForm({ ...passwordForm, [e.target.name]: e.target.value });
-  };
-
+  //Profile Handlers
+  const handleProfileChange = (e) => setProfileForm({ ...profileForm, [e.target.name]: e.target.value });
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -58,34 +55,23 @@ export default function Profile() {
       setImagePreview(URL.createObjectURL(file));
     }
   };
-
   const handleProfileSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setMessage({ type: '', text: '' });
-
     let updatedProfileData = { ...profileForm };
-
     try {
-      // If a new image file is selected, upload it to Cloudinary first
       if (imageFile) {
         const formData = new FormData();
         formData.append('file', imageFile);
         formData.append('upload_preset', import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET);
-
-        const response = await axios.post(
-          `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`,
-          formData
-        );
-        
+        const response = await axios.post(`https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`, formData);
         updatedProfileData.profilePicture = response.data.secure_url;
       }
-
-      // Now, update the user profile with our backend
       const data = await api.updateUserProfile(updatedProfileData);
-      setUser(data.user); // Update user in context
+      setUser(data.user);
       setMessage({ type: 'success', text: 'Profile updated successfully!' });
-      setImageFile(null); // Reset file input state
+      setImageFile(null);
     } catch (err) {
       setMessage({ type: 'error', text: err.message || 'Failed to update profile.' });
     } finally {
@@ -93,39 +79,87 @@ export default function Profile() {
     }
   };
 
+  //Password Handlers
+  const handlePasswordChange = (e) => setPasswordForm({ ...passwordForm, [e.target.name]: e.target.value });
   const handleSendCode = async () => {
     setLoading(true);
     setMessage({ type: '', text: '' });
     try {
       await api.sendChangePasswordCode();
       setMessage({ type: 'success', text: 'A verification code has been sent to your email.' });
-      setStep(2);
+      setPasswordStep(2);
     } catch (err) {
       setMessage({ type: 'error', text: err.message || 'Failed to send code.' });
     } finally {
       setLoading(false);
     }
   };
-
   const handleChangePasswordSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setMessage({ type: '', text: '' });
     try {
       await api.changePassword(passwordForm.resetCode, passwordForm.newPassword);
-      setMessage({ type: 'success', text: 'Password changed successfully! You may need to log in again.' });
+      setMessage({ type: 'success', text: 'Password changed successfully!' });
       setPasswordForm({ resetCode: '', newPassword: '' });
-      setStep(1);
+      setPasswordStep(1);
     } catch (err) {
       setMessage({ type: 'error', text: err.message || 'Failed to change password.' });
     } finally {
       setLoading(false);
     }
   };
+  
+  //2FA Handlers
+  const handleGenerate2FA = async () => {
+    setLoading(true);
+    setMessage({ type: '', text: '' });
+    try {
+      const data = await api.generate2FASecret();
+      setQrCodeUrl(data.qrCodeDataURL);
+      setTwoFactorStep('verify');
+    } catch (err) {
+      setMessage({ type: 'error', text: err.message || 'Failed to generate 2FA secret.' });
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  if (!user) {
-    return <div>Loading user profile...</div>;
-  }
+  const handleVerify2FA = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setMessage({ type: '', text: '' });
+    try {
+      await api.verifyAndEnable2FA(twoFactorCode);
+      setUser({ ...user, isTwoFactorEnabled: true });
+      setMessage({ type: 'success', text: '2FA has been enabled!' });
+      setTwoFactorStep('initial');
+      setTwoFactorCode('');
+    } catch (err) {
+      setMessage({ type: 'error', text: err.message || 'Verification failed.' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDisable2FA = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setMessage({ type: '', text: '' });
+    try {
+      await api.disable2FA(twoFactorCode);
+      setUser({ ...user, isTwoFactorEnabled: false });
+      setMessage({ type: 'success', text: '2FA has been disabled.' });
+      setTwoFactorStep('initial');
+      setTwoFactorCode('');
+    } catch (err) {
+      setMessage({ type: 'error', text: err.message || 'Failed to disable 2FA.' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!user) return <div>Loading...</div>;
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-slate-50">
@@ -147,7 +181,8 @@ export default function Profile() {
                 onClick={() => {
                   setActiveTab('security');
                   setMessage({ type: '', text: '' });
-                  setStep(1);
+                  setPasswordStep(1);
+                  setTwoFactorStep('initial');
                 }}
                 className={`py-3 px-6 text-sm font-medium transition-colors ${
                   activeTab === 'security' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-slate-500 hover:text-slate-700'
@@ -202,36 +237,80 @@ export default function Profile() {
             )}
 
             {activeTab === 'security' && (
-              <div className="space-y-6">
-                <CardTitle>Change Password</CardTitle>
-                {step === 1 && (
-                  <div>
-                    <CardDescription className="mb-4">Click the button below to send a verification code to your email address ({user.email}).</CardDescription>
-                    <Button onClick={handleSendCode} disabled={loading}>
-                        {loading ? 'Sending...' : 'Send Verification Code'}
-                    </Button>
-                  </div>
-                )}
-                {step === 2 && (
-                  <form onSubmit={handleChangePasswordSubmit} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="resetCode">Verification Code</Label>
-                      <Input id="resetCode" name="resetCode" type="text" value={passwordForm.resetCode} onChange={handlePasswordChange} required placeholder="Enter 6-digit code"/>
+              <div className="space-y-8">
+                {/* Change Password Section */}
+                <div className="space-y-4">
+                  <CardTitle>Change Password</CardTitle>
+                  {passwordStep === 1 && (
+                    <div>
+                      <CardDescription className="mb-4">Click the button below to send a verification code to your email address ({user.email}).</CardDescription>
+                      <Button onClick={handleSendCode} disabled={loading}>{loading ? 'Sending...' : 'Send Verification Code'}</Button>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="newPassword">New Password</Label>
-                      <Input id="newPassword" name="newPassword" type="password" value={passwordForm.newPassword} onChange={handlePasswordChange} required placeholder="Enter new password"/>
-                    </div>
-                    <div className="flex space-x-2">
-                        <Button type="submit" disabled={loading}>
-                          {loading ? 'Changing...' : 'Change Password'}
-                        </Button>
-                         <Button type="button" variant="outline" onClick={() => { setStep(1); setMessage({type:'', text:''}); }}>
-                          Back
-                        </Button>
-                    </div>
-                  </form>
-                )}
+                  )}
+                  {passwordStep === 2 && (
+                    <form onSubmit={handleChangePasswordSubmit} className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="resetCode">Verification Code</Label>
+                        <Input id="resetCode" name="resetCode" type="text" value={passwordForm.resetCode} onChange={handlePasswordChange} required placeholder="Enter 6-digit code"/>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="newPassword">New Password</Label>
+                        <Input id="newPassword" name="newPassword" type="password" value={passwordForm.newPassword} onChange={handlePasswordChange} required placeholder="Enter new password"/>
+                      </div>
+                      <div className="flex space-x-2">
+                          <Button type="submit" disabled={loading}>{loading ? 'Changing...' : 'Change Password'}</Button>
+                           <Button type="button" variant="outline" onClick={() => { setPasswordStep(1); setMessage({type:'', text:''}); }}>Back</Button>
+                      </div>
+                    </form>
+                  )}
+                </div>
+
+                <hr/>
+
+                {/* 2FA Section */}
+                <div className="space-y-4">
+                  <CardTitle>Two-Factor Authentication (2FA)</CardTitle>
+                  {!user.isTwoFactorEnabled && twoFactorStep === 'initial' && (
+                      <div>
+                          <CardDescription className="mb-4">Enhance your account security. You'll need an authenticator app like Google Authenticator or Authy.</CardDescription>
+                          <Button onClick={handleGenerate2FA} disabled={loading}>{loading ? 'Generating...' : 'Enable 2FA'}</Button>
+                      </div>
+                  )}
+                  {twoFactorStep === 'verify' && (
+                      <form onSubmit={handleVerify2FA} className="space-y-4">
+                          <CardDescription>Scan the QR code with your authenticator app, then enter the 6-digit code below to complete setup.</CardDescription>
+                          <div className="flex justify-center p-4 bg-white rounded-lg border">
+                              {qrCodeUrl && <img src={qrCodeUrl} alt="2FA QR Code Setup" />}
+                          </div>
+                          <Label htmlFor="2fa-code">Verification Code</Label>
+                          <Input id="2fa-code" value={twoFactorCode} onChange={(e) => setTwoFactorCode(e.target.value)} placeholder="Enter 6-digit code" required />
+                          <div className="flex space-x-2">
+                             <Button type="submit" disabled={loading}>{loading ? 'Verifying...' : 'Verify & Enable'}</Button>
+                             <Button variant="outline" type="button" onClick={() => setTwoFactorStep('initial')}>Cancel</Button>
+                          </div>
+                      </form>
+                  )}
+                  {user.isTwoFactorEnabled && twoFactorStep === 'initial' && (
+                      <div>
+                           <div className="flex items-center p-3 rounded-md bg-green-50 text-green-800 border border-green-200 mb-4">
+                              <ShieldCheck className="h-5 w-5 mr-3"/>
+                              <p className="text-sm font-medium">Two-Factor Authentication is currently enabled.</p>
+                           </div>
+                          <Button variant="destructive" onClick={() => setTwoFactorStep('disable')}>Disable 2FA</Button>
+                      </div>
+                  )}
+                  {twoFactorStep === 'disable' && (
+                       <form onSubmit={handleDisable2FA} className="space-y-4">
+                          <CardDescription>To disable 2FA, please enter a valid code from your authenticator app.</CardDescription>
+                          <Label htmlFor="disable-2fa-code">Current Authentication Code</Label>
+                          <Input id="disable-2fa-code" value={twoFactorCode} onChange={(e) => setTwoFactorCode(e.target.value)} placeholder="Enter 6-digit code" required />
+                          <div className="flex space-x-2">
+                             <Button type="submit" variant="destructive" disabled={loading}>{loading ? 'Disabling...' : 'Confirm & Disable'}</Button>
+                             <Button variant="outline" type="button" onClick={() => setTwoFactorStep('initial')}>Cancel</Button>
+                          </div>
+                      </form>
+                  )}
+                </div>
               </div>
             )}
           </CardContent>

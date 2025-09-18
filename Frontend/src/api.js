@@ -54,6 +54,9 @@ export const verifyEmail = (verificationToken, verificationCode) =>
 
 export const logout = () => client.post("/api/v1/auth/logout");
 
+export const verifyTwoFactorLogin = (token, tempToken) =>
+  client.post("/api/v1/auth/verify-2fa", { token, tempToken });
+
 export const getUser = () => client.get("/api/v1/user/get-user");
 
 export const updateUserProfile = (profileData) => 
@@ -72,3 +75,9 @@ export const uploadModel = (modelData) => client.post("/api/v1/models/upload", m
 export const deleteModel = (modelId) => client.delete(`/api/v1/models/${modelId}`);
 
 export const getModelById = (modelId) => client.get(`/api/v1/models/${modelId}`);
+
+export const generate2FASecret = () => client.post("/api/v1/2fa/generate");
+
+export const verifyAndEnable2FA = (token) => client.post("/api/v1/2fa/verify", { token });
+
+export const disable2FA = (token) => client.post("/api/v1/2fa/disable", { token });

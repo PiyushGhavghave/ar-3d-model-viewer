@@ -18,6 +18,7 @@ export default function Login() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [focusedField, setFocusedField] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
   const { setUser } = useAuth();
@@ -28,6 +29,7 @@ export default function Login() {
   const onSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setLoading(true);
     try {
       const data = await api.login(form.email, form.password);
 
@@ -37,11 +39,19 @@ export default function Login() {
         navigate("/verify-email");
         return;
       }
+      
+      if (data.twoFactorRequired) {
+        // Navigate to the 2FA verification page, passing the temp token
+        navigate("/verify-2fa", { state: { tempToken: data.tempToken } });
+        return;
+      }
 
       setUser(data.user);
       navigate("/");
     } catch (err) {
       setError(err.message || "Login failed");
+    } finally {
+        setLoading(false);
     }
   };
 
@@ -114,9 +124,10 @@ export default function Login() {
 
             <Button
               type="submit"
+              disabled={loading}
               className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
             >
-              Login
+              {loading ? "Logging in..." : "Login"}
             </Button>
 
             {error && (
@@ -129,7 +140,6 @@ export default function Login() {
                 href="/signup"
                 className="text-blue-600 hover:text-blue-700 font-medium"
               >
-
                 Sign Up
               </a>
             </p>
