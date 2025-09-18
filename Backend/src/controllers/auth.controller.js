@@ -110,14 +110,7 @@ const verifyEmail = asyncHandler(async (req, res) => {
     .json(
         new apiResponse(
             200, 
-            {
-                token: loginToken, 
-                user: { 
-                    _id: user._id, 
-                    username: user.username, 
-                    email: user.email 
-                } 
-            }, 
+            { user }, 
             "Email verified and user logged in"
         )
     );
@@ -174,14 +167,7 @@ const login = asyncHandler(async (req, res) => {
         .json(
             new apiResponse(
                 200,
-                {
-                    token: loginToken,
-                    user: {
-                        _id: user._id,
-                        username: user.username,
-                        email: user.email
-                    }
-                },
+                { user },
                 "Login successful"
             )
         );
@@ -258,14 +244,7 @@ const verifyTwoFactorLogin = asyncHandler(async (req, res) => {
     .json(
         new apiResponse(
             200, 
-            { 
-                token: loginToken, 
-                user: { 
-                    _id: user._id,
-                    username: user.username,
-                    email: user.email
-                }
-            },
+            { user },
             "Login successful"
         )
     );
