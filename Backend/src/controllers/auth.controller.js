@@ -102,6 +102,7 @@ const verifyEmail = asyncHandler(async (req, res) => {
     user.isVerified = true;
     user.verificationToken = undefined;
     user.verificationTokenExpires = undefined;
+    user.lastLogin = new Date();
     await user.save();
 
     // generate login token
@@ -165,6 +166,8 @@ const login = asyncHandler(async (req, res) => {
 
     if(user.isVerified){
         // User is verified, proceed with login
+        user.lastLogin = new Date();
+        await user.save({ validateBeforeSave: false });
 
         // generate login token
         const loginToken = user.generateAccessToken();
@@ -246,6 +249,9 @@ const verifyTwoFactorLogin = asyncHandler(async (req, res) => {
     if (!isValid) {
         throw new apiError(400, "Invalid 2FA token");
     }
+
+    user.lastLogin = new Date();
+    await user.save({ validateBeforeSave: false });
 
     // 2FA is valid, now log the user in completely
     const loginToken = user.generateAccessToken();

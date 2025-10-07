@@ -36,6 +36,7 @@ const getAllUsersWithModelCount = asyncHandler(async (req, res) => {
                 country: 1,
                 isDisabled: 1,
                 role: 1,
+                lastLogin: 1,
                 modelCount: { $size: "$models" }
             }
         }

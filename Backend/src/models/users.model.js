@@ -59,6 +59,9 @@ const userSchema = new mongoose.Schema({
     isTwoFactorEnabled: {
         type: Boolean,
         default: false
+    },
+    lastLogin: {
+        type: Date
     }
 }, {timestamps: true});
 
