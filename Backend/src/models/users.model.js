@@ -98,6 +98,18 @@ userSchema.methods.generatePasswordResetToken = function () {
     return resetToken; // return plain code to send via email
 }
 
+userSchema.methods.toJSON = function() {
+    const user = this.toObject();
+    delete user.password;
+    delete user.twoFactorSecret;
+    delete user.verificationToken;
+    delete user.verificationTokenExpires;
+    delete user.passwordResetToken;
+    delete user.passwordResetExpires;
+    delete user.__v;
+    return user;
+}
+
 
 const User = mongoose.model('User', userSchema);
 export default User;
