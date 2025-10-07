@@ -28,6 +28,10 @@ const verifyJWT = asyncHandler(async (req, res, next) => {
         throw new apiError(404, "User not found");
     }
 
+    if (user.isDisabled) {
+        throw new apiError(403, "Your account has been disabled. Please contact support.");
+    }
+
     req.user = user;
     next();
 });

@@ -72,6 +72,12 @@ const verifyEmail = asyncHandler(async (req, res) => {
     if (!user) {
         throw new apiError(404, "User not found");
     }
+
+    // check if user is disabled
+    if (user.isDisabled) {
+        throw new apiError(403, "Your account has been disabled. Please contact support.");
+    }
+
     // check if user is already verified
     if (user.isVerified) {
         throw new apiError(400, "User already verified. Please try logging in.");
@@ -128,6 +134,11 @@ const login = asyncHandler(async (req, res) => {
     const user = await User.findOne({ email });
     if (!user) {
         throw new apiError(404, "User does not exist");
+    }
+
+    // Check if user is disabled
+    if (user.isDisabled) {
+        throw new apiError(403, "Your account has been disabled. Please contact support.");
     }
 
     // Check password
@@ -221,6 +232,10 @@ const verifyTwoFactorLogin = asyncHandler(async (req, res) => {
     const user = await User.findById(payload.userId);
     if (!user){
         throw new apiError(404, "User not found");
+    }
+
+    if (user.isDisabled) {
+        throw new apiError(403, "Your account has been disabled. Please contact support.");
     }
 
     if (!user.twoFactorSecret) {
