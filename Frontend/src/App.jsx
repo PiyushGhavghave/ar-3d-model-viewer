@@ -5,10 +5,12 @@ import Login from "./pages/Login";
 import VerifyEmail from "./pages/VerifyEmail";
 import Home from "./pages/Home";
 import ProtectedRoute from "./components/ProtectedRoute";
+import AdminRoute from "./components/AdminRoute";
 import Profile from "./pages/Profile";
 import UploadModel from "./pages/UploadModel";
 import ARPage from "./pages/ARPage";
 import Verify2FA from "./pages/Verify2FA";
+import AdminPage from "./pages/AdminPage";
 
 export default function App() {
   return (
@@ -17,6 +19,12 @@ export default function App() {
         <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path="/upload" element={<ProtectedRoute><UploadModel /></ProtectedRoute>} />
+
+        <Route 
+          path="/admin/*" 
+          element={<AdminRoute><AdminPage /></AdminRoute>}
+        />
+        
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
         <Route path="/verify-email" element={<VerifyEmail />} />

@@ -55,6 +55,13 @@ export default function Verify2FA() {
     setLoading(true)
     try {
       const data = await api.verifyTwoFactorLogin(verificationCode, tempToken);
+
+      if (data.user?.role === 'admin') {
+        setUser(data.user);
+        navigate("/admin"); // Redirect admins to their dashboard
+        return;
+      }
+
       setUser(data.user)
       navigate("/")
     } catch (err) {

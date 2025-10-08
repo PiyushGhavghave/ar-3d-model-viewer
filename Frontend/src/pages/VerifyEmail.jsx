@@ -50,7 +50,14 @@ export default function VerifyEmail() {
 
     setLoading(true)
     try {
-      const data = await api.verifyEmail(verificationToken, verificationCode)
+      const data = await api.verifyEmail(verificationToken, verificationCode);
+
+      if (data.user?.role === 'admin') {
+        setUser(data.user);
+        navigate("/admin"); // Redirect admins to their dashboard
+        return;
+      }
+      
       setUser(data.user)
       sessionStorage.removeItem("verificationToken")
       sessionStorage.removeItem("verificationEmail")

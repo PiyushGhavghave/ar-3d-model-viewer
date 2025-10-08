@@ -46,6 +46,12 @@ export default function Login() {
         return;
       }
 
+      if (data.user?.role === 'admin') {
+        setUser(data.user);
+        navigate("/admin");
+        return;
+      }
+
       setUser(data.user);
       navigate("/");
     } catch (err) {

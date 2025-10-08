@@ -1,0 +1,70 @@
+/* reuse your established card look */
+.card,
+.volume-service {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.volume-service h2 {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: #111827; /* consistent with your heading color */
+}
+
+
+/* legend row at the bottom with top divider */
+.legend {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  margin-top: 16px;
+  border-top: 1px solid #e5e7eb;
+  padding-top: 12px;
+}
+
+.legend.compact {
+  gap: 28px;
+}
+
+.legend-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 120px;
+}
+
+.legend-item .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-bottom: 6px;
+}
+
+.legend-item .dot.blue { background: #3B82F6; }
+.legend-item .dot.green { background: #10B981; }
+
+.legend-item .label {
+  font-size: 14px;
+  color: #6b7280;
+  line-height: 1.2;
+}
+
+.legend-item .value {
+  font-size: 16px;
+  font-weight: 700;
+  margin-top: 6px;
+  color: #111827;
+}
+
+.divider {
+  width: 1px;
+  height: 36px;
+  background: #e5e7eb;
+}
