@@ -1,46 +1,49 @@
+import React, { useState, useEffect } from 'react';
+import * as api from '../../api';
 import './TodaysSales.css';
 import MetricsCard from './MetricsCard.jsx';
 
 import chartIcon from '../assets/icons/Sales Icon.svg';
-import fileIcon from '../assets/icons/Order Icon.svg';
 import tagIcon from '../assets/icons/Disc Icon.svg';
 import usersIcon from '../assets/icons/New Costumers Icon.svg';
+import modelsIcon from '../assets/icons/sidebar-icons/Cart.svg'; // Using Cart icon for Models
 import Export from '../assets/icons/Export Icon.svg'
 
 const TodaysSales = () => {
+  const [stats, setStats] = useState({ userCount: 0, modelCount: 0 });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+        try {
+            const data = await api.getAdminStats();
+            setStats(data);
+        } catch (err) {
+            console.error("Failed to fetch stats:", err);
+        } finally {
+            setLoading(false);
+        }
+    };
+    fetchStats();
+  }, []);
+
   const metricsData = [
-  {
-    value: "$1k",
-    description: "Total Sales",
-    change: "+8% from yesterday",
-    bgColor: "#FFE2E6",
-    iconBg: "#FA5A7D",
-    icon: chartIcon
-  },
-  {
-    value: "300",
-    description: "Total Order",
-    change: "+5% from yesterday",
-    bgColor: "#FFF4DE",
-    iconBg: "#FF947A",
-    icon: fileIcon
-  },
-  {
-    value: "5",
-    description: "Product Sold",
-    change: "+1.2% from yesterday",
-    bgColor: "#DCFCE7",
-    iconBg: "#3CD856",
-    icon: tagIcon
-  },
-  {
-    value: "8",
-    description: "New Customers",
-    change: "+0.5% from yesterday",
-    bgColor: "#F3E8FF",
-    iconBg: "#BF83FF",
-    icon: usersIcon
-  }
+    {
+      value: loading ? '...' : stats.userCount,
+      description: "Total Users",
+      change: "All registered users",
+      bgColor: "#F3E8FF",
+      iconBg: "#BF83FF",
+      icon: usersIcon
+    },
+    {
+      value: loading ? '...' : stats.modelCount,
+      description: "Total Models",
+      change: "All uploaded models",
+      bgColor: "#DCFCE7",
+      iconBg: "#3CD856",
+      icon: modelsIcon
+    },
   ];
 
   return (

@@ -81,3 +81,11 @@ export const generate2FASecret = () => client.post("/api/v1/2fa/generate");
 export const verifyAndEnable2FA = (token) => client.post("/api/v1/2fa/verify", { token });
 
 export const disable2FA = (token) => client.post("/api/v1/2fa/disable", { token });
+
+export const getAdminStats = () => client.get("/api/v1/admin/stats");
+
+export const getAllUsers = () => client.get("/api/v1/admin/users");
+
+export const toggleUserStatus = (userId) => client.patch(`/api/v1/admin/users/${userId}/toggle-status`);
+
+export const deleteUser = (userId) => client.delete(`/api/v1/admin/users/${userId}`);
