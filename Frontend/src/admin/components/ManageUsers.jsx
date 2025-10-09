@@ -2,10 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import * as api from '../../api'; // Go up to the root src folder for api.js
 import { format } from 'date-fns';
 import './ManageUsers.css'; // We will create this CSS file next
-import MoreVertIcon from '../assets/icons/dummy logo.svg';
-import UserCheckIcon from '../assets/icons/dummy logo.svg';
-import UserXIcon from '../assets/icons/dummy logo.svg';
-import TrashIcon from '../assets/icons/dummy logo.svg';
+import { MoreVertical, Trash2, UserX, UserCheck } from 'lucide-react';
 
 const ManageUsers = () => {
     const [users, setUsers] = useState([]);
@@ -111,16 +108,16 @@ const ManageUsers = () => {
                                     </td>
                                     <td className="actions-cell">
                                         <button onClick={() => setOpenMenuId(openMenuId === user._id ? null : user._id)} className="actions-trigger">
-                                            <img src={MoreVertIcon} alt="Actions"/>
+                                            <MoreVertical size={16} />
                                         </button>
                                         {openMenuId === user._id && (
                                             <div className="actions-menu" ref={menuRef}>
                                                 <button onClick={() => handleToggleStatus(user._id, user.isDisabled)} className="action-item">
-                                                    <img src={user.isDisabled ? UserCheckIcon : UserXIcon} alt="Toggle Status" />
+                                                    {user.isDisabled ? <UserCheck size={16}/> : <UserX size={16}/>}
                                                     <span>{user.isDisabled ? 'Enable User' : 'Disable User'}</span>
                                                 </button>
                                                 <button onClick={() => handleDeleteUser(user._id)} className="action-item action-delete">
-                                                    <img src={TrashIcon} alt="Delete"/>
+                                                    <Trash2 size={16} />
                                                     <span>Delete User</span>
                                                 </button>
                                             </div>
