@@ -50,8 +50,8 @@ const TodaysSales = () => {
     <div className="todays-sales">
       <div className="sales-header">
         <div>
-          <h2>Today's Sales</h2>
-          <p>Sales Summary</p>
+          <h2>Today's Stats</h2>
+          <p>Summary</p>
         </div>
         <button className="export-btn">
           <img src={Export} alt="Export" className="metric-icon" /> 

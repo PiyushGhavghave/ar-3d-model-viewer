@@ -27,7 +27,7 @@ const Sidebar = () => {
       <div className="sidebar-header">
           <div className="logo">
             <img src={DummyLogo} alt="Logo" className="logo-img" />
-            <span className="logo-text">AR Admin</span>
+            <span className="logo-text">Admin</span>
           </div>
       </div>
       <nav className="sidebar-nav">
