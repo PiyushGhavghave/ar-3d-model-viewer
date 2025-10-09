@@ -5,11 +5,12 @@
   background-color: #f8fafc;
 }
 
-.page-title {
-    font-size: 2rem;
+.page-title-manage-users {
+    font-size: 1.2rem;
     font-weight: 700;
-    color: #333;
-    margin-bottom: 2rem;
+    color: #344;
+    /* margin-bottom: 1.2rem; */
+    padding: 0.5rem 2rem;
 }
 
 .table-wrapper {

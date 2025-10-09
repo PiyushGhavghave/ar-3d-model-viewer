@@ -75,7 +75,7 @@ const ManageUsers = () => {
 
     return (
         <div className="page-container">
-            <h1 className="page-title">User Management</h1>
+            <h1 className="page-title-manage-users">User Management</h1>
             <div className="table-wrapper">
                 <table className="data-table">
                     <thead>
