@@ -27,11 +27,13 @@ import userRoutes from './routes/user.route.js'
 import modelRoutes from './routes/models.route.js'
 import twoFactorRoutes from './routes/twoFactorAuth.route.js'
 import adminRoutes from './routes/admin.route.js'
+import notificationRoutes from './routes/notification.route.js'
 
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/user', userRoutes);
 app.use('/api/v1/models', modelRoutes);
 app.use('/api/v1/2fa', twoFactorRoutes);
 app.use('/api/v1/admin', adminRoutes);
+app.use('/api/v1/notifications', notificationRoutes);
 
 export default app;
