@@ -2,8 +2,12 @@ import './Header.css';
 import Magnifier from '../assets/icons/magnifier.svg'
 import USAFlag from '../assets/icons/United.svg'
 import Notifications from '../assets/icons/notification-line.svg'
+import { Link } from 'react-router-dom';
+import { useAuth } from '../../context/AuthProvider';
 
 const Header = () => {
+  const { user } = useAuth();
+
   return (
     <div className="header">
       <div className="header-content">
@@ -23,13 +27,17 @@ const Header = () => {
           <div className="notifications">
             <img src={Notifications} alt="Notifications" className="notification-icon" />
           </div>
-          <div className="user-profile">
-            <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face" alt="User" className="user-avatar" />
+          <Link to="/admin/profile" className="user-profile">
+            <img 
+              src={user?.profilePicture || `https://ui-avatars.com/api/?name=${user?.username}&background=random`} 
+              alt="User" 
+              className="user-avatar" 
+            />
             <div className="user-info">
-              <span className="user-name">Mufiq</span>
-              <span className="user-role">Admin</span>
+              <span className="user-name">{user?.username || 'Admin'}</span>
+              <span className="user-role">{user?.role || 'Admin'}</span>
             </div>
-          </div>
+          </Link>
         </div>
       </div>
     </div>
