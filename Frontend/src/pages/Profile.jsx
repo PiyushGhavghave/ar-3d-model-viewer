@@ -9,7 +9,32 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import Header from '../components/Header';
 import { User, Lock, ShieldCheck } from 'lucide-react';
 
-export default function Profile() {
+export default function Profile({ inAdminPanel = false }) {
+  const { user, doLogout } = useAuth();
+
+  if (!user) {
+    return <div>Loading user profile...</div>;
+  }
+
+  return (
+    <>
+      {!inAdminPanel ? (
+        <div className="flex min-h-screen w-full flex-col bg-slate-50">
+          <Header onLogout={doLogout} appName="My Profile" />
+          <main className="flex-grow container mx-auto p-4 md:p-8 flex items-start justify-center">
+            <ProfilePage />
+          </main>
+        </div>
+      ) : (
+        <main className="flex-1 container overflow-y-auto mx-auto p-2 md:p-4 flex items-start justify-center">
+            <ProfilePage />
+        </main>
+      )}
+    </>
+  );
+}
+
+function ProfilePage() {
   const { user, setUser, doLogout } = useAuth();
   
   const [profileForm, setProfileForm] = useState({
@@ -162,9 +187,6 @@ export default function Profile() {
   if (!user) return <div>Loading...</div>;
 
   return (
-    <div className="flex min-h-screen w-full flex-col bg-slate-50">
-      <Header onLogout={doLogout} appName="My Profile" />
-      <main className="flex-grow container mx-auto p-4 md:p-8 flex items-start justify-center">
         <Card className="w-full max-w-2xl shadow-lg border-0 bg-white">
           <CardHeader>
             <div className="flex border-b">
@@ -315,7 +337,5 @@ export default function Profile() {
             )}
           </CardContent>
         </Card>
-      </main>
-    </div>
   );
 }
