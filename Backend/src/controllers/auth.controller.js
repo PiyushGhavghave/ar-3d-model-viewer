@@ -1,4 +1,6 @@
 import User from "../models/users.model.js"
+import Notification from "../models/notification.model.js";
+import eventEmitter from "../utils/eventEmitter.js";
 import {asyncHandler} from "../utils/asyncHandler.js"
 import { apiResponse } from "../utils/apiResponse.js";
 import { apiError } from "../utils/apiError.js";
@@ -26,6 +28,18 @@ const signup = asyncHandler(async (req, res) => {
     const user = new User({ username, email, password });
     const verificationCode = user.generateVerificationCode();
     await user.save();
+
+    // Create a notification for admin about new user signup
+    try {
+        const notification = await Notification.create({
+            message: `New user '${username}' has registered.`,
+            link: '/admin/users'
+        });
+        eventEmitter.emit('new_notification', notification);
+    } catch (error) {
+        // Log the error, but don't fail the signup process if notification fails
+        console.error("Failed to create notification:", error);
+    }
 
     // Send verification email
     const emailHTML = getEmailTemplate(user.username, verificationCode);
