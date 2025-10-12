@@ -1,5 +1,5 @@
 import './Sidebar.css';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthProvider';
 
 import DummyLogo from '../assets/icons/dummy logo.svg';
@@ -24,12 +24,12 @@ const Sidebar = () => {
 
   return (
     <div className="sidebar">
-      <div className="sidebar-header">
-          <div className="logo">
-            <img src={DummyLogo} alt="Logo" className="logo-img" />
-            <span className="logo-text">Admin</span>
-          </div>
-      </div>
+      <Link to="/admin/dashboard" className="sidebar-header">
+        <div className="logo">
+          <img src={DummyLogo} alt="Logo" className="logo-img" />
+          <span className="logo-text">App Admin</span>
+        </div>
+      </Link>
       <nav className="sidebar-nav">
         {menuItems.map((item) => (
           <NavLink
