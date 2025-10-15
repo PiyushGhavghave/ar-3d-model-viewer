@@ -30,4 +30,22 @@ const passwordResetTemplate = (username, verificationCode) => {
     `;
 }
 
-export { getEmailTemplate, passwordResetTemplate };
+const invitationTemplate = (username, email, tempPassword, role) => {
+    // Note: Replace "https://app-login-url.com" with actual frontend login URL
+    const loginUrl = process.env.CORS_ORIGIN ? `${process.env.CORS_ORIGIN}/login` : "https://app-login-url.com";
+    return `
+        <div style="font-family: Arial, sans-serif; max-width: 500px; margin: auto; border: 1px solid #ddd; padding: 20px; border-radius: 8px;">
+            <h2 style="color: #4CAF50; text-align: center;">You're Invited to Join as ${role}</h2>
+            <p>Hello <strong>${username}</strong>,</p>
+            <p>You have been invited to join our platform as an ${role}. Here are your temporary login credentials:</p>
+            <p><strong>Email:</strong> ${email}</p>
+            <p><strong>Password:</strong> ${tempPassword}</p>
+            <a href="${loginUrl}" style="display: inline-block; background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; text-decoration: none;">Login Now</a>
+            <p>For security, please log in and change your password as soon as possible from your profile settings.</p>
+            <hr/>
+            <p style="font-size: 12px; color: #999; text-align: center;">&copy; ${new Date().getFullYear()} AR Model Viewer. All rights reserved.</p>
+        </div>
+    `;
+}
+
+export { getEmailTemplate, passwordResetTemplate, invitationTemplate };
