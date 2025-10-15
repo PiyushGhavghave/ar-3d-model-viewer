@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import Header from '../components/Header';
-import { User, Lock, ShieldCheck } from 'lucide-react';
+import { User, Lock, ShieldCheck, Send } from 'lucide-react';
 
 export default function Profile({ inAdminPanel = false }) {
   const { user, doLogout } = useAuth();
@@ -58,6 +58,11 @@ function ProfilePage() {
   const [twoFactorStep, setTwoFactorStep] = useState('initial'); // initial, generate, verify, disable
   const [qrCodeUrl, setQrCodeUrl] = useState('');
   const [twoFactorCode, setTwoFactorCode] = useState('');
+
+  const [inviteForm, setInviteForm] = useState({
+    email: '',
+    role: 'editor' 
+  });
 
   useEffect(() => {
     if (user) {
@@ -184,6 +189,26 @@ function ProfilePage() {
     }
   };
 
+  // invite Handlers
+  const handleInviteChange = (e) => {
+      setInviteForm({ ...inviteForm, [e.target.name]: e.target.value });
+  };
+
+  const handleInviteSubmit = async (e) => {
+      e.preventDefault();
+      setLoading(true);
+      setMessage({ type: '', text: '' });
+      try {
+          await api.inviteUser(inviteForm.email, inviteForm.role);
+          setMessage({ type: 'success', text: `Invitation successfully sent to ${inviteForm.email}.` });
+          setInviteForm({ email: '', role: 'editor' }); // Reset form
+      } catch (err) {
+          setMessage({ type: 'error', text: err.message || 'Failed to send invite.' });
+      } finally {
+          setLoading(false);
+      }
+  };
+
   if (!user) return <div>Loading...</div>;
 
   return (
@@ -213,6 +238,20 @@ function ProfilePage() {
                 <Lock className="inline-block mr-2 h-4 w-4" />
                 Security
               </button>
+              {user.role === 'admin' && (
+                  <button
+                      onClick={() => {
+                          setActiveTab('invite');
+                          setMessage({ type: '', text: '' });
+                      }}
+                      className={`py-3 px-6 text-sm font-medium transition-colors ${
+                          activeTab === 'invite' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-slate-500 hover:text-slate-700'
+                      }`}
+                  >
+                      <Send className="inline-block mr-2 h-4 w-4" />
+                      Invite
+                  </button>
+              )}
             </div>
           </CardHeader>
           <CardContent className="p-6">
@@ -333,6 +372,45 @@ function ProfilePage() {
                       </form>
                   )}
                 </div>
+              </div>
+            )}
+
+            {activeTab === 'invite' && user.role === 'admin' && (
+              <div className="space-y-6">
+                  <CardTitle>Invite a New Admin or Editor</CardTitle>
+                  <CardDescription>
+                      An invitation with a temporary username and password will be sent to the email address you provide.
+                  </CardDescription>
+                  <form onSubmit={handleInviteSubmit} className="space-y-4">
+                      <div className="space-y-2">
+                          <Label htmlFor="invite-email">Email Address</Label>
+                          <Input 
+                              id="invite-email" 
+                              name="email"
+                              type="email" 
+                              value={inviteForm.email} 
+                              onChange={handleInviteChange}
+                              placeholder="new.admin@example.com"
+                              required 
+                          />
+                      </div>
+                      <div className="space-y-2">
+                          <Label htmlFor="invite-role">Assign Role</Label>
+                          <select 
+                              id="invite-role" 
+                              name="role"
+                              value={inviteForm.role}
+                              onChange={handleInviteChange}
+                              className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                              <option value="editor">Editor</option>
+                              <option value="admin">Admin</option>
+                          </select>
+                      </div>
+                      <Button type="submit" disabled={loading} className="w-full sm:w-auto">
+                          {loading ? 'Sending...' : 'Send Invitation'}
+                      </Button>
+                  </form>
               </div>
             )}
           </CardContent>

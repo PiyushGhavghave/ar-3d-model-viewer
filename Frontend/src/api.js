@@ -93,3 +93,5 @@ export const deleteUser = (userId) => client.delete(`/api/v1/admin/users/${userI
 export const getNotifications = () => client.get("/api/v1/notifications");
 
 export const markAllNotificationsAsRead = () => client.post("/api/v1/notifications/mark-read");
+
+export const inviteUser = (email, role) => client.post('/api/v1/admin/invite', { email, role });
