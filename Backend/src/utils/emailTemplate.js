@@ -43,7 +43,7 @@ const invitationTemplate = (username, email, tempPassword, role) => {
             <a href="${loginUrl}" style="display: inline-block; background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; text-decoration: none;">Login Now</a>
             <p>For security, please log in and change your password as soon as possible from your profile settings.</p>
             <hr/>
-            <p style="font-size: 12px; color: #999; text-align: center;">&copy; ${new Date().getFullYear()} AR Model Viewer. All rights reserved.</p>
+            <p style="font-size: 12px; color: #999; text-align: center;">&copy; ${new Date().getFullYear()} APPNAME. All rights reserved.</p>
         </div>
     `;
 }
