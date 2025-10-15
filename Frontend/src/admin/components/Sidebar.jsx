@@ -6,6 +6,7 @@ import DummyLogo from '../assets/icons/dummy logo.svg';
 import DashboardIcon from '../assets/icons/sidebar-icons/Graph 1.svg';
 import UsersIcon from '../assets/icons/sidebar-icons/Group.svg';
 import SignOutIcon from '../assets/icons/sidebar-icons/Group 923.svg';
+import profileIcon from '../assets/icons/sidebar-icons/profile-1341-svgrepo-com.svg';
 
 
 const Sidebar = () => {
@@ -20,6 +21,7 @@ const Sidebar = () => {
   const menuItems = [
     { id: 'dashboard', name: 'Dashboard', icon: DashboardIcon, path: '/admin/dashboard' },
     { id: 'users', name: 'Users', icon: UsersIcon, path: '/admin/users' },
+    { id: 'profile', name: 'Profile', icon: profileIcon, path: '/admin/profile' }
   ];
 
   return (
