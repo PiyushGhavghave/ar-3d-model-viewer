@@ -3,8 +3,10 @@ import * as api from '../../api'; // Go up to the root src folder for api.js
 import { format } from 'date-fns';
 import './ManageUsers.css'; // We will create this CSS file next
 import { MoreVertical, Trash2, UserX, UserCheck } from 'lucide-react';
+import { useAuth } from '../../context/AuthProvider';
 
 const ManageUsers = () => {
+    const { user } = useAuth();
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -82,7 +84,7 @@ const ManageUsers = () => {
                             <th>Models</th>
                             <th>Last Login</th>
                             <th>Status</th>
-                            <th>Actions</th>
+                            {user && user.role === 'admin' && <th>Actions</th>}
                         </tr>
                     </thead>
                     <tbody>
@@ -106,23 +108,25 @@ const ManageUsers = () => {
                                             {user.isDisabled ? 'Disabled' : 'Active'}
                                         </span>
                                     </td>
-                                    <td className="actions-cell">
-                                        <button onClick={() => setOpenMenuId(openMenuId === user._id ? null : user._id)} className="actions-trigger">
-                                            <MoreVertical size={16} />
-                                        </button>
-                                        {openMenuId === user._id && (
-                                            <div className="actions-menu" ref={menuRef}>
-                                                <button onClick={() => handleToggleStatus(user._id, user.isDisabled)} className="action-item">
-                                                    {user.isDisabled ? <UserCheck size={16}/> : <UserX size={16}/>}
-                                                    <span>{user.isDisabled ? 'Enable User' : 'Disable User'}</span>
-                                                </button>
-                                                <button onClick={() => handleDeleteUser(user._id)} className="action-item action-delete">
-                                                    <Trash2 size={16} />
-                                                    <span>Delete User</span>
-                                                </button>
-                                            </div>
-                                        )}
-                                    </td>
+                                    {user && user.role === 'admin' && (
+                                        <td className="actions-cell">
+                                            <button onClick={() => setOpenMenuId(openMenuId === user._id ? null : user._id)} className="actions-trigger">
+                                                <MoreVertical size={16} />
+                                            </button>
+                                            {openMenuId === user._id && (
+                                                <div className="actions-menu" ref={menuRef}>
+                                                    <button onClick={() => handleToggleStatus(user._id, user.isDisabled)} className="action-item">
+                                                        {user.isDisabled ? <UserCheck size={16}/> : <UserX size={16}/>}
+                                                        <span>{user.isDisabled ? 'Enable User' : 'Disable User'}</span>
+                                                    </button>
+                                                    <button onClick={() => handleDeleteUser(user._id)} className="action-item action-delete">
+                                                        <Trash2 size={16} />
+                                                        <span>Delete User</span>
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </td>
+                                    )}
                                 </tr>
                             )
                         ))}
