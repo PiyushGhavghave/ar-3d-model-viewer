@@ -199,7 +199,7 @@ function ProfilePage() {
       setLoading(true);
       setMessage({ type: '', text: '' });
       try {
-          await api.inviteUser(inviteForm.email, inviteForm.role);
+          await api.inviteAdminOrEditor(inviteForm.email, inviteForm.role);
           setMessage({ type: 'success', text: `Invitation successfully sent to ${inviteForm.email}.` });
           setInviteForm({ email: '', role: 'editor' }); // Reset form
       } catch (err) {
