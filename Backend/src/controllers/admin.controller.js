@@ -20,7 +20,17 @@ const getDashboardStats = asyncHandler(async (req, res) => {
 });
 
 const getAllUsersWithModelCount = asyncHandler(async (req, res) => {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+
+    const totalUsers = await User.countDocuments({ role: { $ne: 'admin' } });
+    const totalPages = Math.ceil(totalUsers / limit);
+
     const users = await User.aggregate([
+        {
+            $match: { role: { $ne: 'admin' } }
+        },
         {
             $lookup: {
                 from: "models",
@@ -41,12 +51,20 @@ const getAllUsersWithModelCount = asyncHandler(async (req, res) => {
                 lastLogin: 1,
                 modelCount: { $size: "$models" }
             }
-        }
+        },
+        { $sort: { createdAt: -1 } }, // Sort before skipping/limiting
+        { $skip: skip },
+        { $limit: limit }
     ]);
 
     res.status(200)
     .json(
-        new apiResponse(200, users, "Users fetched successfully")
+        new apiResponse(200, {
+            users,
+            totalPages,
+            currentPage: page,
+            totalUsers
+        }, "Users fetched successfully")
     );
 });
 
