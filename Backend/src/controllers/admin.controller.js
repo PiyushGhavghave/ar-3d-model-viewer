@@ -157,11 +157,49 @@ const inviteAdminOrEditor = asyncHandler(async (req, res) => {
     );
 });
 
+const inviteUser = asyncHandler(async (req, res) => {
+    const { email } = req.body;
+    if (!email) {
+        throw new apiError(400, "Email is required to send an invite");
+    }
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+        throw new apiError(400, "A user with this email already exists");
+    }
+
+    //create unique username and password from email
+    const username = email.split('@')[0] + Math.floor(1000 + Math.random() * 9000);
+    const tempPassword = Math.random().toString(36).slice(-8); // generate a random 8 character password
+
+    // Create new user
+    const newUser = new User({
+        username,
+        email,
+        password: tempPassword,
+        role: 'user',
+    });
+    await newUser.save();
+
+    // Send email invitation
+    const emailHTML = invitationTemplate(newUser.username, newUser.email, tempPassword, newUser.role);
+    await sendEmail({
+        to: newUser.email,
+        subject: "You're invited to join!",
+        html: emailHTML
+    });
+
+    res.status(200)
+    .json(
+        new apiResponse(200, { id: newUser._id }, "User invite sent successfully")
+    );
+});
 
 export {
     getDashboardStats,
     getAllUsersWithModelCount,
     toggleUserStatus,
     deleteUser,
-    inviteAdminOrEditor
+    inviteAdminOrEditor,
+    inviteUser,
 };
