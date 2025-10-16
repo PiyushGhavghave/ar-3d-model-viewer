@@ -214,18 +214,18 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    background-color: #2563eb; /* A blue color */
+    background-color: #5D5FEF;
     color: white;
     font-weight: 500;
     font-size: 14px;
     padding: 10px 16px;
     border: none;
-    border-radius: 8px;
+    border-radius: 3px;
     cursor: pointer;
     transition: background-color 0.2s;
 }
 .invite-user-button:hover {
-    background-color: #1d4ed8;
+    background-color: #494cf6;
 }
 
 .invite-modal-overlay {
