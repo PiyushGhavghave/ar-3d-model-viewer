@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import * as api from '../../api';
 import { format } from 'date-fns';
 import './ManageUsers.css';
-import { MoreVertical, Trash2, UserX, UserCheck, ChevronLeft, ChevronRight } from 'lucide-react';
+import { MoreVertical, Trash2, UserX, UserCheck, ChevronLeft, ChevronRight, UserPlus, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthProvider';
 
 const ManageUsers = () => {
@@ -13,6 +13,11 @@ const ManageUsers = () => {
     const [openMenuId, setOpenMenuId] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+
+    const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+    const [inviteEmail, setInviteEmail] = useState('');
+    const [inviteMessage, setInviteMessage] = useState({ type: '', text: '' });
+    const [isInviting, setIsInviting] = useState(false);
     
     const menuRef = useRef(null);
 
@@ -92,12 +97,34 @@ const ManageUsers = () => {
         }
     };
 
+    const handleInviteUser = async (e) => {
+        e.preventDefault();
+        setIsInviting(true);
+        setInviteMessage({ type: '', text: '' });
+        try {
+            await api.inviteUser(inviteEmail);
+            setInviteMessage({ type: 'success', text: `Invitation sent successfully to ${inviteEmail}!` });
+            setInviteEmail(''); // Clear input on success
+        } catch (err) {
+            setInviteMessage({ type: 'error', text: err.message || 'Failed to send invite.' });
+        } finally {
+            setIsInviting(false);
+        }
+    };
+
     if (loading) return <div className="loading-container"><p>Loading users...</p></div>;
     if (error) return <div className="error-container"><p>{error}</p></div>;
 
     return (
+        <>
         <div className="page-container">
-            <h1 className="page-title-manage-users">User Management</h1>
+            <div className="page-header">
+                <h1 className="page-title-manage-users">User Management</h1>
+                <button className="invite-user-button" onClick={() => setIsInviteModalOpen(true)}>
+                    <UserPlus size={16} />
+                    <span>Invite User</span>
+                </button>
+            </div>
             <div className="table-wrapper">
                 <table className="data-table">
                     <thead>
@@ -177,6 +204,41 @@ const ManageUsers = () => {
                 </div>
             )}
         </div>
+        {isInviteModalOpen && (
+            <div className="invite-modal-overlay">
+                <div className="invite-modal-card">
+                    <div className="invite-modal-header">
+                        <h2>Invite a New User</h2>
+                        <button onClick={() => setIsInviteModalOpen(false)} className="close-button">
+                            <X size={20} />
+                        </button>
+                    </div>
+                    <div className="invite-modal-content">
+                        <p>An email with temporary login credentials will be sent to the user.</p>
+                        {inviteMessage.text && (
+                            <div className={`message ${inviteMessage.type === 'success' ? 'message-success' : 'message-error'}`}>
+                                {inviteMessage.text}
+                            </div>
+                        )}
+                        <form onSubmit={handleInviteUser}>
+                            <label htmlFor="email">Email Address</label>
+                            <input
+                                id="email"
+                                type="email"
+                                value={inviteEmail}
+                                onChange={(e) => setInviteEmail(e.target.value)}
+                                placeholder="new.user@example.com"
+                                required
+                            />
+                            <button type="submit" disabled={isInviting}>
+                                {isInviting ? 'Sending...' : 'Send Invite'}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        )}
+        </>
     );
 };
 

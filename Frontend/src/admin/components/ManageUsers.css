@@ -203,3 +203,139 @@
     cursor: not-allowed;
     background-color: #f9fafb;
 }
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.invite-user-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #2563eb; /* A blue color */
+    color: white;
+    font-weight: 500;
+    font-size: 14px;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.invite-user-button:hover {
+    background-color: #1d4ed8;
+}
+
+.invite-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+}
+
+.invite-modal-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    width: 100%;
+    max-width: 400px;
+}
+
+.invite-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.invite-modal-header h2 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #111827;
+}
+
+.close-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #9ca3af;
+}
+.close-button:hover {
+    color: #111827;
+}
+
+.invite-modal-content {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.invite-modal-content p {
+    font-size: 14px;
+    color: #6b7280;
+    margin: 0;
+}
+
+.invite-modal-content form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.invite-modal-content label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+}
+
+.invite-modal-content input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 14px;
+}
+.invite-modal-content input:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+}
+
+.invite-modal-content button[type="submit"] {
+    background-color: #2563eb;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.invite-modal-content button[type="submit"]:hover {
+    background-color: #1d4ed8;
+}
+.invite-modal-content button[type="submit"]:disabled {
+    background-color: #9ca3af;
+    cursor: not-allowed;
+}
+
+.message {
+    padding: 12px;
+    border-radius: 6px;
+    font-size: 14px;
+}
+.message-success {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+.message-error {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
