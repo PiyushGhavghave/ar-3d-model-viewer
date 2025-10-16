@@ -52,9 +52,9 @@ export default function VerifyEmail() {
     try {
       const data = await api.verifyEmail(verificationToken, verificationCode);
 
-      if (data.user?.role === 'admin') {
+      if (data.user?.role === 'admin' || data.user?.role === 'editor') {
         setUser(data.user);
-        navigate("/admin"); // Redirect admins to their dashboard
+        navigate("/admin"); // Redirect admins and editors to their dashboard
         return;
       }
       

@@ -46,7 +46,7 @@ export default function Login() {
         return;
       }
 
-      if (data.user?.role === 'admin') {
+      if (data.user?.role === 'admin' || data.user?.role === 'editor') {
         setUser(data.user);
         navigate("/admin");
         return;
