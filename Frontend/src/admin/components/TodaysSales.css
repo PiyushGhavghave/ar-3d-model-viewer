@@ -49,8 +49,9 @@
 }
 
 .todays-sales-grid {
-  /* height: 70%; */
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 20px;
+  flex-grow: 1;
+  padding: 20px 0px;
 }
