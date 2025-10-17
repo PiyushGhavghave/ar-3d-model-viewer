@@ -279,7 +279,7 @@ function ProfilePage() {
                     <img src={imagePreview || `https://ui-avatars.com/api/?name=${user.username}&background=random`} alt="Profile" className="h-20 w-20 rounded-full object-cover" />
                     <div className="flex-grow space-y-2">
                         <Label htmlFor="profilePicture">Change Profile Picture</Label>
-                        <Input id="profilePicture" name="profilePicture" type="file" accept="image/*" onChange={handleImageChange} className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
+                        <Input id="profilePicture" name="profilePicture" type="file" accept="image/*" onChange={handleImageChange} />
                     </div>
                 </div>
                 <div className="space-y-2">
