@@ -52,9 +52,18 @@ function ProfilePage() {
   const [imagePreview, setImagePreview] = useState('');
   const [activeTab, setActiveTab] = useState('profile');
   const [message, setMessage] = useState({ type: '', text: '' });
-  const [loading, setLoading] = useState(false);
-  const [passwordStep, setPasswordStep] = useState(1);
+  const [loading, setLoading] = useState({
+    profile: false,
+    passwordCode: false,
+    passwordChange: false,
+    twoFactorGenerate: false,
+    twoFactorVerify: false,
+    twoFactorDisable: false,
+    invite: false,
+  });
   
+  const [passwordStep, setPasswordStep] = useState(1);
+
   const [twoFactorStep, setTwoFactorStep] = useState('initial'); // initial, generate, verify, disable
   const [qrCodeUrl, setQrCodeUrl] = useState('');
   const [twoFactorCode, setTwoFactorCode] = useState('');
@@ -87,7 +96,7 @@ function ProfilePage() {
   };
   const handleProfileSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    setLoading(prev => ({ ...prev, profile: true }));
     setMessage({ type: '', text: '' });
     let updatedProfileData = { ...profileForm };
     try {
@@ -105,14 +114,14 @@ function ProfilePage() {
     } catch (err) {
       setMessage({ type: 'error', text: err.message || 'Failed to update profile.' });
     } finally {
-      setLoading(false);
+      setLoading(prev => ({ ...prev, profile: false }));
     }
   };
 
   //Password Handlers
   const handlePasswordChange = (e) => setPasswordForm({ ...passwordForm, [e.target.name]: e.target.value });
   const handleSendCode = async () => {
-    setLoading(true);
+    setLoading(prev => ({ ...prev, passwordCode: true }));
     setMessage({ type: '', text: '' });
     try {
       await api.sendChangePasswordCode();
@@ -121,12 +130,12 @@ function ProfilePage() {
     } catch (err) {
       setMessage({ type: 'error', text: err.message || 'Failed to send code.' });
     } finally {
-      setLoading(false);
+      setLoading(prev => ({ ...prev, passwordCode: false }));
     }
   };
   const handleChangePasswordSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    setLoading(prev => ({ ...prev, passwordChange: true }));
     setMessage({ type: '', text: '' });
     try {
       await api.changePassword(passwordForm.resetCode, passwordForm.newPassword);
@@ -136,13 +145,13 @@ function ProfilePage() {
     } catch (err) {
       setMessage({ type: 'error', text: err.message || 'Failed to change password.' });
     } finally {
-      setLoading(false);
+      setLoading(prev => ({ ...prev, passwordChange: false }));
     }
   };
   
   //2FA Handlers
   const handleGenerate2FA = async () => {
-    setLoading(true);
+    setLoading(prev => ({ ...prev, twoFactorGenerate: true }));
     setMessage({ type: '', text: '' });
     try {
       const data = await api.generate2FASecret();
@@ -151,13 +160,13 @@ function ProfilePage() {
     } catch (err) {
       setMessage({ type: 'error', text: err.message || 'Failed to generate 2FA secret.' });
     } finally {
-      setLoading(false);
+      setLoading(prev => ({ ...prev, twoFactorGenerate: false }));
     }
   };
 
   const handleVerify2FA = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    setLoading(prev => ({ ...prev, twoFactorVerify: true }));
     setMessage({ type: '', text: '' });
     try {
       await api.verifyAndEnable2FA(twoFactorCode);
@@ -168,13 +177,13 @@ function ProfilePage() {
     } catch (err) {
       setMessage({ type: 'error', text: err.message || 'Verification failed.' });
     } finally {
-      setLoading(false);
+      setLoading(prev => ({ ...prev, twoFactorVerify: false }));
     }
   };
 
   const handleDisable2FA = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    setLoading(prev => ({ ...prev, twoFactorDisable: true }));
     setMessage({ type: '', text: '' });
     try {
       await api.disable2FA(twoFactorCode);
@@ -185,7 +194,7 @@ function ProfilePage() {
     } catch (err) {
       setMessage({ type: 'error', text: err.message || 'Failed to disable 2FA.' });
     } finally {
-      setLoading(false);
+      setLoading(prev => ({ ...prev, twoFactorDisable: false }));
     }
   };
 
@@ -196,7 +205,7 @@ function ProfilePage() {
 
   const handleInviteSubmit = async (e) => {
       e.preventDefault();
-      setLoading(true);
+      setLoading(prev => ({ ...prev, invite: true }));
       setMessage({ type: '', text: '' });
       try {
           await api.inviteAdminOrEditor(inviteForm.email, inviteForm.role);
@@ -205,7 +214,7 @@ function ProfilePage() {
       } catch (err) {
           setMessage({ type: 'error', text: err.message || 'Failed to send invite.' });
       } finally {
-          setLoading(false);
+          setLoading(prev => ({ ...prev, invite: false }));
       }
   };
 
@@ -291,8 +300,8 @@ function ProfilePage() {
                       <Input id="country" name="country" type="text" value={profileForm.country} onChange={handleProfileChange} placeholder="e.g., United States" />
                     </div>
                 </div>
-                <Button type="submit" className="w-full md:w-auto" disabled={loading}>
-                  {loading ? 'Saving...' : 'Save Changes'}
+                <Button type="submit" className="w-full md:w-auto" disabled={loading.profile}>
+                  {loading.profile ? 'Saving...' : 'Save Changes'}
                 </Button>
               </form>
             )}
@@ -305,7 +314,7 @@ function ProfilePage() {
                   {passwordStep === 1 && (
                     <div>
                       <CardDescription className="mb-4">Click the button below to send a verification code to your email address ({user.email}).</CardDescription>
-                      <Button onClick={handleSendCode} disabled={loading}>{loading ? 'Sending...' : 'Send Verification Code'}</Button>
+                      <Button onClick={handleSendCode} disabled={loading.passwordCode}>{loading.passwordCode ? 'Sending...' : 'Send Verification Code'}</Button>
                     </div>
                   )}
                   {passwordStep === 2 && (
@@ -319,7 +328,7 @@ function ProfilePage() {
                         <Input id="newPassword" name="newPassword" type="password" value={passwordForm.newPassword} onChange={handlePasswordChange} required placeholder="Enter new password"/>
                       </div>
                       <div className="flex space-x-2">
-                          <Button type="submit" disabled={loading}>{loading ? 'Changing...' : 'Change Password'}</Button>
+                          <Button type="submit" disabled={loading.passwordChange}>{loading.passwordChange ? 'Changing...' : 'Change Password'}</Button>
                            <Button type="button" variant="outline" onClick={() => { setPasswordStep(1); setMessage({type:'', text:''}); }}>Back</Button>
                       </div>
                     </form>
@@ -334,7 +343,7 @@ function ProfilePage() {
                   {!user.isTwoFactorEnabled && twoFactorStep === 'initial' && (
                       <div>
                           <CardDescription className="mb-4">Enhance your account security. You'll need an authenticator app like Google Authenticator or Authy.</CardDescription>
-                          <Button onClick={handleGenerate2FA} disabled={loading}>{loading ? 'Generating...' : 'Enable 2FA'}</Button>
+                          <Button onClick={handleGenerate2FA} disabled={loading.twoFactorGenerate}>{loading.twoFactorGenerate ? 'Generating...' : 'Enable 2FA'}</Button>
                       </div>
                   )}
                   {twoFactorStep === 'verify' && (
@@ -346,7 +355,7 @@ function ProfilePage() {
                           <Label htmlFor="2fa-code">Verification Code</Label>
                           <Input id="2fa-code" value={twoFactorCode} onChange={(e) => setTwoFactorCode(e.target.value)} placeholder="Enter 6-digit code" required />
                           <div className="flex space-x-2">
-                             <Button type="submit" disabled={loading}>{loading ? 'Verifying...' : 'Verify & Enable'}</Button>
+                             <Button type="submit" disabled={loading.twoFactorVerify}>{loading.twoFactorVerify ? 'Verifying...' : 'Verify & Enable'}</Button>
                              <Button variant="outline" type="button" onClick={() => setTwoFactorStep('initial')}>Cancel</Button>
                           </div>
                       </form>
@@ -366,7 +375,7 @@ function ProfilePage() {
                           <Label htmlFor="disable-2fa-code">Current Authentication Code</Label>
                           <Input id="disable-2fa-code" value={twoFactorCode} onChange={(e) => setTwoFactorCode(e.target.value)} placeholder="Enter 6-digit code" required />
                           <div className="flex space-x-2">
-                             <Button type="submit" variant="destructive" disabled={loading}>{loading ? 'Disabling...' : 'Confirm & Disable'}</Button>
+                             <Button type="submit" variant="destructive" disabled={loading.twoFactorDisable}>{loading.twoFactorDisable ? 'Disabling...' : 'Confirm & Disable'}</Button>
                              <Button variant="outline" type="button" onClick={() => setTwoFactorStep('initial')}>Cancel</Button>
                           </div>
                       </form>
@@ -407,8 +416,8 @@ function ProfilePage() {
                               <option value="admin">Admin</option>
                           </select>
                       </div>
-                      <Button type="submit" disabled={loading} className="w-full sm:w-auto">
-                          {loading ? 'Sending...' : 'Send Invitation'}
+                      <Button type="submit" disabled={loading.invite} className="w-full sm:w-auto">
+                          {loading.invite ? 'Sending...' : 'Send Invitation'}
                       </Button>
                   </form>
               </div>
