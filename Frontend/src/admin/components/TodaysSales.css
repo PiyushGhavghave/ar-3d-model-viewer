@@ -53,5 +53,5 @@
   grid-template-columns: repeat(2, 1fr);
   gap: 20px;
   flex-grow: 1;
-  padding: 20px 0px;
+  padding: 20px 0px; 
 }
