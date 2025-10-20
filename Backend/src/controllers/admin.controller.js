@@ -195,6 +195,32 @@ const inviteUser = asyncHandler(async (req, res) => {
     );
 });
 
+const updateUserByAdminOrEditor = asyncHandler(async (req, res) => {
+    const { username, password, profilePicture, city, country } = req.body;
+    const { id } = req.params;
+
+    const user = await User.findById(id);
+    if (!user) {
+        throw new apiError(404, "User not found");
+    }
+
+    if (username) user.username = username;
+    if (profilePicture) user.profilePicture = profilePicture;
+    if (city) user.city = city;
+    if (country) user.country = country;
+    
+    if (password) {
+        user.password = password;
+    }
+
+    await user.save();
+
+    res.status(200)
+    .json(
+        new apiResponse(200, { id: user._id, username: user.username }, "User updated successfully")
+    );
+});
+
 export {
     getDashboardStats,
     getAllUsersWithModelCount,
@@ -202,4 +228,5 @@ export {
     deleteUser,
     inviteAdminOrEditor,
     inviteUser,
+    updateUserByAdminOrEditor,
 };
