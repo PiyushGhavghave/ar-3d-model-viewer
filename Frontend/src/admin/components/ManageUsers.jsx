@@ -2,8 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import * as api from '../../api';
 import { format } from 'date-fns';
 import './ManageUsers.css';
-import { MoreVertical, Trash2, UserX, UserCheck, ChevronLeft, ChevronRight, UserPlus, X } from 'lucide-react';
+import { MoreVertical, Trash2, UserX, UserCheck, ChevronLeft, ChevronRight, UserPlus, X, Edit2} from 'lucide-react';
 import { useAuth } from '../../context/AuthProvider';
+import EditUserModal from './EditUserModal';
 
 const ManageUsers = () => {
     const { user } = useAuth();
@@ -18,6 +19,9 @@ const ManageUsers = () => {
     const [inviteEmail, setInviteEmail] = useState('');
     const [inviteMessage, setInviteMessage] = useState({ type: '', text: '' });
     const [isInviting, setIsInviting] = useState(false);
+
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [selectedUser, setSelectedUser] = useState(null);
     
     const menuRef = useRef(null);
 
@@ -64,7 +68,7 @@ const ManageUsers = () => {
                     )
                 );
             } catch (err) {
-                alert('Failed to update user status.');
+                alert(`${err}`);
             } finally {
                 setOpenMenuId(null);
             }
@@ -77,7 +81,7 @@ const ManageUsers = () => {
                 await api.deleteUser(userId);
                 fetchUsers(currentPage); 
             } catch (err) {
-                alert('Failed to delete user.');
+                alert(`${err}`);
             } finally {
                 setOpenMenuId(null);
             }
@@ -112,6 +116,16 @@ const ManageUsers = () => {
         }
     };
 
+    const openEditModal = (userToEdit) => {
+        setSelectedUser(userToEdit);
+        setIsEditModalOpen(true);
+        setOpenMenuId(null); 
+    };
+
+    const handleUpdateSuccess = () => {
+        fetchUsers(currentPage);
+    };
+
     if (loading) return <div className="loading-container"><p>Loading users...</p></div>;
     if (error) return <div className="error-container"><p>{error}</p></div>;
 
@@ -134,7 +148,7 @@ const ManageUsers = () => {
                             <th>Models</th>
                             <th>Last Login</th>
                             <th>Status</th>
-                            {user && user.role === 'admin' && <th>Actions</th>}
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -158,13 +172,19 @@ const ManageUsers = () => {
                                             {listUser.isDisabled ? 'Disabled' : 'Active'}
                                         </span>
                                     </td>
-                                    {user && user.role === 'admin' && (
-                                        <td className="actions-cell">
-                                            <button onClick={() => setOpenMenuId(openMenuId === listUser._id ? null : listUser._id)} className="actions-trigger">
-                                                <MoreVertical size={16} />
-                                            </button>
-                                            {openMenuId === listUser._id && (
-                                                <div className="actions-menu" ref={menuRef}>
+
+                                    <td className="actions-cell">
+                                        <button onClick={() => setOpenMenuId(openMenuId === listUser._id ? null : listUser._id)} className="actions-trigger">
+                                            <MoreVertical size={16} />
+                                        </button>
+                                        {openMenuId === listUser._id && (
+                                            <div className="actions-menu" ref={menuRef}>
+                                                <button onClick={() => openEditModal(listUser)} className="action-item">
+                                                    <Edit2 size={16} />
+                                                    <span>Edit User</span>
+                                                </button>
+                                                {user && user.role === 'admin' && (
+                                                    <>
                                                     <button onClick={() => handleToggleStatus(listUser._id, listUser.isDisabled)} className="action-item">
                                                         {listUser.isDisabled ? <UserCheck size={16}/> : <UserX size={16}/>}
                                                         <span>{listUser.isDisabled ? 'Enable User' : 'Disable User'}</span>
@@ -173,10 +193,12 @@ const ManageUsers = () => {
                                                         <Trash2 size={16} />
                                                         <span>Delete User</span>
                                                     </button>
-                                                </div>
-                                            )}
-                                        </td>
-                                    )}
+                                                    </>
+                                                )}
+                                            </div>
+                                        )}
+                                    </td>
+
                                 </tr>
                             ))
                         ) : (
@@ -237,6 +259,14 @@ const ManageUsers = () => {
                     </div>
                 </div>
             </div>
+        )}
+
+        {isEditModalOpen && (
+            <EditUserModal
+                user={selectedUser}
+                onClose={() => setIsEditModalOpen(false)}
+                onUpdateSuccess={handleUpdateSuccess}
+            />
         )}
         </>
     );

@@ -90,6 +90,8 @@ export const toggleUserStatus = (userId) => client.patch(`/api/v1/admin/users/${
 
 export const deleteUser = (userId) => client.delete(`/api/v1/admin/users/${userId}`);
 
+export const updateUserByAdminOrEditor = (userId, userData) => client.patch(`/api/v1/admin/users/${userId}`, userData);
+
 export const getNotifications = () => client.get("/api/v1/notifications");
 
 export const markAllNotificationsAsRead = () => client.post("/api/v1/notifications/mark-read");
