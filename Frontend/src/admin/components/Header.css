@@ -225,3 +225,50 @@
   font-size: 14px;
   color: #64748b;
 }
+
+/* Theme Toggle Button Styles */
+.theme-toggle-container {
+  display: flex;
+  align-items: center;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 9999px; /* Pill shape */
+  padding: 4px;
+}
+
+.dark .theme-toggle-container {
+  background-color: #1a1a1a;
+  border-color: #444;
+}
+
+.theme-toggle-button {
+  background: none;
+  border: none;
+  border-radius: 9999px;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #64748b;
+  transition: all 0.2s;
+}
+
+.theme-toggle-button:hover {
+  color: #1e293b;
+}
+
+.theme-toggle-button.active {
+  background-color: #ffffff;
+  color: #2563eb; /* Blue */
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.dark .theme-toggle-button:hover {
+  color: #e0e0e0;
+}
+
+.dark .theme-toggle-button.active {
+  background-color: #383838;
+  color: #3b82f6; /* Brighter Blue */
+}
