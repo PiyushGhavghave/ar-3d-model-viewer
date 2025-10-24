@@ -79,18 +79,18 @@ export default function Home() {
   }
 
   return (
-    <div className="flex min-h-screen w-full flex-col bg-slate-50">
+    <div className="flex min-h-screen w-full flex-col bg-slate-50 dark:bg-gray-900">
       <Header onLogout={doLogout} appName="My 3D Models" />
       <main className="flex-grow container mx-auto p-4 md:p-8">
-        {loading && <p className="text-center">Loading your models...</p>}
-        {error && <p className="text-center text-red-500">{error}</p>}
+        {loading && <p className="text-center text-gray-900 dark:text-gray-100">Loading your models...</p>}
+        {error && <p className="text-center text-red-500 dark:text-red-400">{error}</p>}
         
         {!loading && !error && (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 {models.map(model => (
                     <Card 
                         key={model._id} 
-                        className="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow group relative"
+                        className="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow group relative bg-white dark:bg-gray-800"
                         onClick={() => setSelectedModel(model)}
                     >
                         {user && user._id === model.user && (
@@ -98,16 +98,16 @@ export default function Home() {
                                 <Button 
                                     variant="ghost" 
                                     size="icon" 
-                                    className="h-8 w-8 rounded-full bg-white/50 hover:bg-white"
+                                    className="h-8 w-8 rounded-full bg-white/50 dark:bg-gray-700/50 hover:bg-white dark:hover:bg-gray-600"
                                     onClick={(e) => toggleMenu(e, model._id)}
                                 >
                                     <MoreVertical className="h-4 w-4" />
                                 </Button>
                                 {openMenuId === model._id && (
-                                    <div className="absolute right-0 mt-2 w-40 bg-white rounded-md shadow-lg border z-20">
+                                    <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-700 rounded-md shadow-lg border border-gray-200 dark:border-gray-600 z-20">
                                         <Button 
                                             variant="ghost" 
-                                            className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+                                            className="w-full justify-start text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900"
                                             onClick={(e) => handleDelete(e, model._id)}
                                         >
                                             <Trash2 className="h-4 w-4 mr-2" />
@@ -117,7 +117,7 @@ export default function Home() {
                                 )}
                             </div>
                         )}
-                        <div className="aspect-square bg-slate-100 overflow-hidden">
+                        <div className="aspect-square bg-slate-100 dark:bg-gray-700 overflow-hidden">
                            <img 
                             src={model.thumbnailUrl} 
                             alt={model.title} 
@@ -125,8 +125,8 @@ export default function Home() {
                            />
                         </div>
                         <div className="p-4">
-                            <h3 className="font-semibold truncate">{model.title}</h3>
-                            <p className="text-xs text-slate-500">Uploaded by you</p>
+                            <h3 className="font-semibold truncate text-gray-900 dark:text-gray-100">{model.title}</h3>
+                            <p className="text-xs text-slate-500 dark:text-gray-400">Uploaded by you</p>
                         </div>
                     </Card>
                 ))}
