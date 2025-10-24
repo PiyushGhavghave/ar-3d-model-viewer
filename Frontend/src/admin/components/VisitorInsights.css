@@ -52,3 +52,41 @@
   height: 12px;
   border-radius: 3px;
 }
+
+
+
+.dark .visitor-insights {
+  background: #1f2937;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+  color: #E5E7EB;
+}
+
+.dark .insights-title {
+  color: #F9FAFB;
+}
+
+.dark .legend-btn {
+  color: #9CA3AF;
+  opacity: 0.6;
+  background: transparent;
+  transition: all 0.2s ease;
+}
+
+.dark .legend-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  opacity: 0.8;
+}
+
+.dark .legend-btn.active {
+  color: #F9FAFB;
+  opacity: 1;
+}
+
+.dark .legend-dot {
+  box-shadow: 0 0 2px rgba(255,255,255,0.2);
+}
+
+.dark .visitor-insights:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.7);
+}

@@ -68,3 +68,52 @@
 .nav-text {
   font-size: 14px;
 }
+
+
+
+
+
+.dark .sidebar {
+  background-color: #111827;
+}
+
+.dark .sidebar-header {
+ 
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.dark .logo-img {
+  background: #1f2937;
+  box-shadow: 0 2px 8px rgba(255,255,255,0.05);
+}
+
+.dark .logo-text {
+  color: #F9FAFB;
+}
+
+.dark .nav-item {
+  color: #A0AEC0;
+  background-color: transparent;
+}
+
+.dark .nav-item:hover {
+  background-color: rgba(255,255,255,0.06);
+  color: #E5E7EB;
+}
+
+.dark .nav-item.active {
+  background-color: #4F46E5;
+  color: #FFFFFF;
+}
+
+.dark .nav-icon {
+  color: #A0AEC0;
+}
+
+.dark .nav-item.active .nav-icon {
+  color: #FFFFFF;
+}
+
+.dark .nav-text {
+  color: inherit;
+}

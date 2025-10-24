@@ -146,7 +146,7 @@
   position: absolute;
   top: 4px;
   right: 4px;
-  background-color: #ef4444; /* red-500 */
+  background-color: #ef4444;
   color: white;
   border-radius: 9999px;
   width: 16px;
@@ -226,13 +226,13 @@
   color: #64748b;
 }
 
-/* Theme Toggle Button Styles */
+
 .theme-toggle-container {
   display: flex;
   align-items: center;
   background-color: #f8fafc;
   border: 1px solid #e2e8f0;
-  border-radius: 9999px; /* Pill shape */
+  border-radius: 9999px;
   padding: 4px;
 }
 
@@ -260,7 +260,7 @@
 
 .theme-toggle-button.active {
   background-color: #ffffff;
-  color: #2563eb; /* Blue */
+  color: #2563eb;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
@@ -270,5 +270,115 @@
 
 .dark .theme-toggle-button.active {
   background-color: #383838;
-  color: #3b82f6; /* Brighter Blue */
+  color: #3b82f6;
+}
+
+
+
+.dark .header {
+  background-color: #111827;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.dark .page-title {
+  color: #F9FAFB;
+}
+
+.dark .search-input {
+  background-color: #1f2937;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.dark .search-icon {
+  color: #9CA3AF;
+}
+
+.dark .search-input input {
+  color: #F9FAFB;
+}
+
+.dark .search-input input::placeholder {
+  color: #6B7280;
+}
+
+.dark .language-selector {
+  background-color: #1f2937;
+  border-color: rgba(255, 255, 255, 0.08);
+  color: #E5E7EB;
+}
+
+.dark .dropdown-arrow {
+  color: #9CA3AF;
+}
+
+.dark .notification-button {
+  background: none;
+}
+
+.dark .notification-icon {
+  color: #9CA3AF;
+}
+
+.dark .notification-badge {
+  border-color: #111827;
+}
+
+
+.dark .notification-dropdown {
+  background-color: #1f2937;
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.8);
+}
+
+.dark .dropdown-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.dark .dropdown-header h3 {
+  color: #F9FAFB;
+}
+
+.dark .notification-item {
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  background-color: transparent;
+}
+
+.dark .notification-item:hover {
+  background-color: rgba(255,255,255,0.06);
+}
+
+.dark .notification-message {
+  color: #E5E7EB;
+}
+
+.dark .notification-time {
+  color: #9CA3AF;
+}
+
+.dark .no-notifications {
+  color: #9CA3AF;
+}
+
+
+.dark .user-name {
+  color: #F9FAFB;
+}
+
+.dark .user-role {
+  color: #9CA3AF;
+}
+
+
+.dark .user-avatar {
+  border: 2px solid rgba(255,255,255,0.05);
+}
+
+
+.dark .header-actions {
+  color: #E5E7EB;
+}
+
+
+.dark .header {
+  box-shadow: 0 1px 4px rgba(0,0,0,0.6);
 }

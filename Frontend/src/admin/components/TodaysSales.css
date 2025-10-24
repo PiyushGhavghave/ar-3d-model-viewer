@@ -55,3 +55,45 @@
   flex-grow: 1;
   padding: 20px 0px; 
 }
+
+/* === Dark Theme: Today's Sales Card === */
+
+.dark .todays-sales {
+  background: #1f2937;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  color: #E5E7EB;
+}
+
+.dark .sales-header h2 {
+  color: #F9FAFB;
+}
+
+.dark .sales-header p {
+  color: #9CA3AF;
+}
+
+.dark .export-btn {
+  background: #111827;
+  border: 0px solid rgba(255, 255, 255, 0.1);
+  color: #E5E7EB;
+  transition: all 0.2s ease;
+}
+
+.dark .export-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: #F9FAFB;
+}
+
+.dark .metric-icon {
+  filter: brightness(0) invert(0.9);
+}
+
+.dark .todays-sales-grid {
+  background: transparent;
+}
+
+.dark .todays-sales:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.7);
+}

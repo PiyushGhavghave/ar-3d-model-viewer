@@ -112,3 +112,50 @@
 .recharts-cartesian-axis-tick tspan {
   fill: var(--tvr-muted);
 }
+
+
+.dark .tvr {
+  background: #1f2937;
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.6),
+    0 24px 48px rgba(0, 0, 0, 0.7);
+  color: #e5e7eb;
+}
+
+.dark .tvr__title {
+  color: #f9fafb;
+}
+
+.dark .tvr__chart {
+  background: transparent;
+}
+
+.dark .tvr__legendTitle {
+  color: #f9fafb;
+}
+
+.dark .tvr__legendSub {
+  color: #9ca3af;
+}
+
+.dark .tvr__legendValue--green {
+  color: #17b26a;
+}
+
+.dark .tvr__legendValue--orange {
+  color: #f5a500;
+}
+
+.dark .tvr__icon--reality {
+  background: rgba(45, 199, 166, 0.2);
+  color: #2dc7a6;
+}
+
+.dark .tvr__icon--target {
+  background: rgba(245, 196, 67, 0.2);
+  color: #f5c443;
+}
+
+.dark .recharts-cartesian-axis-tick tspan {
+  fill: #9ca3af;
+}

@@ -111,3 +111,17 @@
     padding: 16px;
   }
 }
+
+
+.dark .dashboard {
+  background-color: #111827;
+}
+
+
+.dark .todays-sales-container,
+.dark .visitor-insights-container,
+.dark .chart-container {
+  background-color: #1f2937;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 1px solid #374151;
+}

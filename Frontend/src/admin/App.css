@@ -17,3 +17,20 @@
   flex-direction: column;
   overflow: hidden;
 }
+
+
+.dark .app {
+  background-color: #111827;
+  color: #d1d5db;
+}
+
+.dark .main-content {
+  background-color: #111827;
+}
+
+
+.dark .page-title,
+.dark .page-title-manage-users,
+.dark .main-title {
+  color: #ffffff;
+}
