@@ -33,11 +33,15 @@ export default function Signup() {
 
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 p-4">
-      <Card className="w-full max-w-md shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 dark:from-gray-900 dark:to-gray-800 p-4 transition-colors duration-300">
+      <Card className="w-full max-w-md shadow-lg border-0 bg-white/80 dark:bg-gray-800/90 backdrop-blur-sm text-gray-900 dark:text-gray-100">
         <CardHeader className="space-y-1 text-center">
-          <CardTitle className="text-2xl font-semibold text-slate-800">Create Account</CardTitle>
-          <CardDescription className="text-slate-600">Enter your details to get started</CardDescription>
+          <CardTitle className="text-2xl font-semibold text-slate-800 dark:text-gray-100">
+            Create Account
+          </CardTitle>
+          <CardDescription className="text-slate-600 dark:text-gray-300">
+            Enter your details to get started
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={onSubmit} className="space-y-6">
@@ -50,20 +54,23 @@ export default function Signup() {
                 onChange={onChange}
                 onFocus={() => setFocusedField("username")}
                 onBlur={() => setFocusedField("")}
-                className="peer h-12 pt-4 pb-2 px-3 border-2 border-slate-200 rounded-lg focus:border-blue-500 focus:ring-0 transition-colors"
+                className="peer h-12 pt-4 pb-2 px-3 border-2 border-slate-200 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg focus:border-blue-500 focus:ring-0 transition-colors dark:text-gray-100"
                 placeholder=" "
                 required
               />
               <Label
                 htmlFor="username"
                 className={`absolute left-3 transition-all duration-200 pointer-events-none ${
-                  isFieldFocused("username") ? "top-1 text-xs text-blue-600" : "top-3 text-base text-slate-500"
+                  isFieldFocused("username")
+                    ? "top-1 text-xs text-blue-600 dark:text-blue-400"
+                    : "top-3 text-base text-slate-500 dark:text-gray-400"
                 }`}
               >
                 Username
               </Label>
             </div>
 
+            {/* Email */}
             <div className="relative">
               <Input
                 id="email"
@@ -73,20 +80,23 @@ export default function Signup() {
                 onChange={onChange}
                 onFocus={() => setFocusedField("email")}
                 onBlur={() => setFocusedField("")}
-                className="peer h-12 pt-4 pb-2 px-3 border-2 border-slate-200 rounded-lg focus:border-blue-500 focus:ring-0 transition-colors"
+                className="peer h-12 pt-4 pb-2 px-3 border-2 border-slate-200 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg focus:border-blue-500 focus:ring-0 transition-colors dark:text-gray-100"
                 placeholder=" "
                 required
               />
               <Label
                 htmlFor="email"
                 className={`absolute left-3 transition-all duration-200 pointer-events-none ${
-                  isFieldFocused("email") ? "top-1 text-xs text-blue-600" : "top-3 text-base text-slate-500"
+                  isFieldFocused("email")
+                    ? "top-1 text-xs text-blue-600 dark:text-blue-400"
+                    : "top-3 text-base text-slate-500 dark:text-gray-400"
                 }`}
               >
                 Email
               </Label>
             </div>
 
+            {/* Password */}
             <div className="relative">
               <Input
                 id="password"
@@ -96,31 +106,42 @@ export default function Signup() {
                 onChange={onChange}
                 onFocus={() => setFocusedField("password")}
                 onBlur={() => setFocusedField("")}
-                className="peer h-12 pt-4 pb-2 px-3 border-2 border-slate-200 rounded-lg focus:border-blue-500 focus:ring-0 transition-colors"
+                className="peer h-12 pt-4 pb-2 px-3 border-2 border-slate-200 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg focus:border-blue-500 focus:ring-0 transition-colors dark:text-gray-100"
                 placeholder=" "
                 required
               />
               <Label
                 htmlFor="password"
                 className={`absolute left-3 transition-all duration-200 pointer-events-none ${
-                  isFieldFocused("password") ? "top-1 text-xs text-blue-600" : "top-3 text-base text-slate-500"
+                  isFieldFocused("password")
+                    ? "top-1 text-xs text-blue-600 dark:text-blue-400"
+                    : "top-3 text-base text-slate-500 dark:text-gray-400"
                 }`}
               >
                 Password
               </Label>
             </div>
 
+            {/* Submit */}
             <Button
               type="submit"
-              className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+              className="w-full h-12 bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
             >
               Sign Up
             </Button>
 
-            {error && <p className="text-center text-sm text-red-500">{error}</p>}
-            <p className="text-center text-sm text-slate-600">
+            {error && (
+              <p className="text-center text-sm text-red-600 dark:text-red-400">
+                {error}
+              </p>
+            )}
+
+            <p className="text-center text-sm text-slate-600 dark:text-gray-300">
               Already have an account?{" "}
-              <a href="/login" className="text-blue-600 hover:text-blue-700 font-medium">
+              <a
+                href="/login"
+                className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
+              >
                 Log in
               </a>
             </p>
