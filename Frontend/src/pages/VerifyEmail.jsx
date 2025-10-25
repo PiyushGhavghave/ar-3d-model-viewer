@@ -79,56 +79,57 @@ export default function VerifyEmail() {
   }, [])
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 p-4">
-      <Card className="w-full max-w-md shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-        <CardHeader className="space-y-1 text-center">
-          <CardTitle className="text-2xl font-semibold text-slate-800">Verify Email</CardTitle>
-          <CardDescription className="text-slate-600">
-            Enter the code sent to your email. Expires in 5 hours.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="flex justify-center gap-2">
-              {code.map((digit, index) => (
-                <Input
-                  key={index}
-                  ref={(el) => (inputRefs.current[index] = el)}
-                  type="text"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  maxLength={1}
-                  value={digit}
-                  onChange={(e) => handleInputChange(index, e.target.value)}
-                  onKeyDown={(e) => handleKeyDown(index, e)}
-                  className="w-12 h-12 text-center text-lg font-semibold border-2 border-slate-200 rounded-lg focus:border-blue-500 focus:ring-0 transition-colors"
-                />
-              ))}
-            </div>
+  <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950 p-4">
+    <Card className="w-full max-w-md shadow-lg border-0 bg-white/80 backdrop-blur-sm dark:bg-slate-800/80">
+      <CardHeader className="space-y-1 text-center">
+        <CardTitle className="text-2xl font-semibold text-slate-800 dark:text-slate-100">
+          Verify Email
+        </CardTitle>
+        <CardDescription className="text-slate-600 dark:text-slate-400">
+          Enter the code sent to your email. Expires in 5 hours.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="flex justify-center gap-2">
+            {code.map((digit, index) => (
+              <Input
+                key={index}
+                ref={(el) => (inputRefs.current[index] = el)}
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={1}
+                value={digit}
+                onChange={(e) => handleInputChange(index, e.target.value)}
+                onKeyDown={(e) => handleKeyDown(index, e)}
+                className="w-12 h-12 text-center text-lg font-semibold border-2 border-slate-200 dark:border-slate-600 rounded-lg focus:border-blue-500 focus:ring-0 transition-colors bg-white dark:bg-slate-700 dark:text-white"
+              />
+            ))}
+          </div>
 
+          {error && <p className="text-center text-red-600 text-sm">{error}</p>}
 
-            {error && <p className="text-center text-red-600 text-sm">{error}</p>}
+          <Button
+            type="submit"
+            disabled={loading || code.join("").length !== 6}
+            className="w-full h-12 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors"
+          >
+            {loading ? "Verifying..." : "Verify"}
+          </Button>
 
-            <Button
-              type="submit"
-              disabled={loading || code.join("").length !== 6}
-              className="w-full h-12 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors"
+          <div className="text-center">
+            <button
+              type="button"
+              onClick={handleResendCode}
+              className="text-sm text-blue-600 hover:text-blue-700 font-medium underline dark:text-blue-400 dark:hover:text-blue-300"
             >
-              {loading ? "Verifying..." : "Verify"}
-            </Button>
-
-            <div className="text-center">
-              <button
-                type="button"
-                onClick={handleResendCode}
-                className="text-sm text-blue-600 hover:text-blue-700 font-medium underline"
-              >
-                Resend Code
-              </button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
-  )
+              Resend Code
+            </button>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
+  </div>
+)
 }
