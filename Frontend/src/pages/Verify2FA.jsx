@@ -72,11 +72,13 @@ export default function Verify2FA() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 p-4">
-      <Card className="w-full max-w-md shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950 p-4">
+      <Card className="w-full max-w-md shadow-lg border-0 bg-white/80 backdrop-blur-sm dark:bg-slate-800/80">
         <CardHeader className="space-y-1 text-center">
-          <CardTitle className="text-2xl font-semibold text-slate-800">Two-Factor Authentication</CardTitle>
-          <CardDescription className="text-slate-600">
+          <CardTitle className="text-2xl font-semibold text-slate-800 dark:text-slate-100">
+            Two-Factor Authentication
+          </CardTitle>
+          <CardDescription className="text-slate-600 dark:text-slate-400">
             Enter the code from your authenticator app.
           </CardDescription>
         </CardHeader>
@@ -93,7 +95,7 @@ export default function Verify2FA() {
                   value={digit}
                   onChange={(e) => handleInputChange(index, e.target.value)}
                   onKeyDown={(e) => handleKeyDown(index, e)}
-                  className="w-12 h-12 text-center text-lg font-semibold border-2 border-slate-200 rounded-lg focus:border-blue-500 focus:ring-0 transition-colors"
+                  className="w-12 h-12 text-center text-lg font-semibold border-2 border-slate-200 dark:border-slate-600 rounded-lg focus:border-blue-500 focus:ring-0 transition-colors bg-white dark:bg-slate-700 dark:text-white"
                 />
               ))}
             </div>
