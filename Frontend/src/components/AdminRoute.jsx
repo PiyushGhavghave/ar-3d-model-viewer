@@ -6,7 +6,7 @@ export default function AdminRoute({ children }) {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return <div>Loading authentication status...</div>;
+    return <div className="min-h-screen flex items-center justify-center dark:bg-gray-900">Loading authentication status...</div>;
   }
 
   if (!user) {
