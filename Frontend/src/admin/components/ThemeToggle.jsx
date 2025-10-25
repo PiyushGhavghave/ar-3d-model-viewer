@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTheme } from 'next-themes';
 import { Sun, Moon, Laptop } from 'lucide-react';
+import './ThemeToggle.css';
 
 const ThemeToggle = () => {
   const { theme, setTheme } = useTheme();

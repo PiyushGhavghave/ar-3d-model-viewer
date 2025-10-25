@@ -2,6 +2,7 @@ import React from "react";
 import { LogOut, User, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import ThemeToggle from "@/admin/components/ThemeToggle";
 
 export default function Header({ appName = "AR Viewer", onLogout }) {
   return (
@@ -11,6 +12,7 @@ export default function Header({ appName = "AR Viewer", onLogout }) {
           {appName}
         </Link>
         <div className="flex items-center space-x-1">
+            <ThemeToggle />
             <Link to="/upload">
                 <Button variant="ghost" size="sm" className="text-slate-800 dark:text-gray-100">
                     <Upload className="mr-2 h-4 w-4" />
