@@ -66,3 +66,13 @@
     @apply bg-background text-foreground;
   }
 }
+
+
+.dark body,
+.dark .app,
+.dark main,
+.dark .bg-slate-50,
+.dark .min-h-screen {
+  background-color: #111827 !important;
+  /* color: #d1d5db !important; */
+}
