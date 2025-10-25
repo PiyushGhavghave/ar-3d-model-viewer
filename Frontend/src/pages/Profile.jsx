@@ -221,13 +221,15 @@ function ProfilePage() {
   if (!user) return <div>Loading...</div>;
 
   return (
-        <Card className="w-full max-w-2xl shadow-lg border-0 bg-white">
+        <Card className="w-full max-w-2xl shadow-lg border-0 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
           <CardHeader>
-            <div className="flex border-b">
+            <div className="flex border-b border-gray-200 dark:border-gray-700">
               <button
                 onClick={() => setActiveTab('profile')}
                 className={`py-3 px-6 text-sm font-medium transition-colors ${
-                  activeTab === 'profile' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-slate-500 hover:text-slate-700'
+                  activeTab === 'profile'
+                    ? 'border-b-2 border-blue-600 text-blue-600'
+                    : 'text-slate-500 hover:text-slate-700 dark:text-gray-400 dark:hover:text-gray-200'
                 }`}
               >
                 <User className="inline-block mr-2 h-4 w-4" />
@@ -241,185 +243,247 @@ function ProfilePage() {
                   setTwoFactorStep('initial');
                 }}
                 className={`py-3 px-6 text-sm font-medium transition-colors ${
-                  activeTab === 'security' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-slate-500 hover:text-slate-700'
+                  activeTab === 'security'
+                    ? 'border-b-2 border-blue-600 text-blue-600'
+                    : 'text-slate-500 hover:text-slate-700 dark:text-gray-400 dark:hover:text-gray-200'
                 }`}
               >
                 <Lock className="inline-block mr-2 h-4 w-4" />
                 Security
               </button>
               {user.role === 'admin' && (
-                  <button
-                      onClick={() => {
-                          setActiveTab('invite');
-                          setMessage({ type: '', text: '' });
-                      }}
-                      className={`py-3 px-6 text-sm font-medium transition-colors ${
-                          activeTab === 'invite' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-slate-500 hover:text-slate-700'
-                      }`}
-                  >
-                      <Send className="inline-block mr-2 h-4 w-4" />
-                      Invite
-                  </button>
+                <button
+                  onClick={() => {
+                    setActiveTab('invite');
+                    setMessage({ type: '', text: '' });
+                  }}
+                  className={`py-3 px-6 text-sm font-medium transition-colors ${
+                    activeTab === 'invite'
+                      ? 'border-b-2 border-blue-600 text-blue-600'
+                      : 'text-slate-500 hover:text-slate-700 dark:text-gray-400 dark:hover:text-gray-200'
+                  }`}
+                >
+                  <Send className="inline-block mr-2 h-4 w-4" />
+                  Invite
+                </button>
               )}
             </div>
           </CardHeader>
           <CardContent className="p-6">
             {message.text && (
-              <div className={`p-3 rounded-md mb-4 text-sm ${
-                  message.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+              <div
+                className={`p-3 rounded-md mb-4 text-sm ${
+                  message.type === 'success'
+                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-400'
+                    : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-400'
                 }`}
               >
                 {message.text}
               </div>
             )}
-
+      
             {activeTab === 'profile' && (
               <form onSubmit={handleProfileSubmit} className="space-y-6">
                 <div className="flex items-center space-x-4">
-                    <img src={imagePreview || `https://ui-avatars.com/api/?name=${user.username}&background=random`} alt="Profile" className="h-20 w-20 rounded-full object-cover" />
-                    <div className="flex-grow space-y-2">
-                        <Label htmlFor="profilePicture">Change Profile Picture</Label>
-                        <Input id="profilePicture" name="profilePicture" type="file" accept="image/*" onChange={handleImageChange} />
-                    </div>
+                  <img
+                    src={imagePreview || `https://ui-avatars.com/api/?name=${user.username}&background=random`}
+                    alt="Profile"
+                    className="h-20 w-20 rounded-full object-cover"
+                  />
+                  <div className="flex-grow space-y-2">
+                    <Label htmlFor="profilePicture" className="dark:text-gray-200">Change Profile Picture</Label>
+                    <Input
+                      id="profilePicture"
+                      name="profilePicture"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                    />
+                  </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="username">Username</Label>
-                  <Input id="username" name="username" type="text" value={profileForm.username} onChange={handleProfileChange} required />
+                  <Label htmlFor="username" className="dark:text-gray-200">Username</Label>
+                  <Input
+                    id="username"
+                    name="username"
+                    type="text"
+                    value={profileForm.username}
+                    onChange={handleProfileChange}
+                    required
+                    className="dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                  />
                 </div>
-                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input id="email" name="email" type="email" value={user.email} disabled className="bg-slate-100" />
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="dark:text-gray-200">Email</Label>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    value={user.email}
+                    disabled
+                    className="bg-slate-100 dark:bg-gray-700 dark:text-gray-100"
+                  />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="city">City</Label>
-                      <Input id="city" name="city" type="text" value={profileForm.city} onChange={handleProfileChange} placeholder="e.g., New York"/>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="country">Country</Label>
-                      <Input id="country" name="country" type="text" value={profileForm.country} onChange={handleProfileChange} placeholder="e.g., United States" />
-                    </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="city" className="dark:text-gray-200">City</Label>
+                    <Input
+                      id="city"
+                      name="city"
+                      type="text"
+                      value={profileForm.city}
+                      onChange={handleProfileChange}
+                      placeholder="e.g., New York"
+                      className="dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="country" className="dark:text-gray-200">Country</Label>
+                    <Input
+                      id="country"
+                      name="country"
+                      type="text"
+                      value={profileForm.country}
+                      onChange={handleProfileChange}
+                      placeholder="e.g., United States"
+                      className="dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                    />
+                  </div>
                 </div>
-                <Button type="submit" className="w-full md:w-auto" disabled={loading.profile}>
+                <Button
+                  type="submit"
+                  className="w-full md:w-auto"
+                  disabled={loading.profile}
+                >
                   {loading.profile ? 'Saving...' : 'Save Changes'}
                 </Button>
               </form>
             )}
-
+      
             {activeTab === 'security' && (
               <div className="space-y-8">
-                {/* Change Password Section */}
+                {/* Change Password */}
                 <div className="space-y-4">
-                  <CardTitle>Change Password</CardTitle>
+                  <CardTitle className="dark:text-gray-100">Change Password</CardTitle>
                   {passwordStep === 1 && (
                     <div>
-                      <CardDescription className="mb-4">Click the button below to send a verification code to your email address ({user.email}).</CardDescription>
-                      <Button onClick={handleSendCode} disabled={loading.passwordCode}>{loading.passwordCode ? 'Sending...' : 'Send Verification Code'}</Button>
+                      <CardDescription className="mb-4 dark:text-gray-300">Click the button below to send a verification code to your email address ({user.email}).</CardDescription>
+                      <Button onClick={handleSendCode} disabled={loading.passwordCode}>
+                        {loading.passwordCode ? 'Sending...' : 'Send Verification Code'}
+                      </Button>
                     </div>
                   )}
                   {passwordStep === 2 && (
                     <form onSubmit={handleChangePasswordSubmit} className="space-y-4">
                       <div className="space-y-2">
-                        <Label htmlFor="resetCode">Verification Code</Label>
-                        <Input id="resetCode" name="resetCode" type="text" value={passwordForm.resetCode} onChange={handlePasswordChange} required placeholder="Enter 6-digit code"/>
+                        <Label htmlFor="resetCode" className="dark:text-gray-200">Verification Code</Label>
+                        <Input id="resetCode" name="resetCode" type="text" value={passwordForm.resetCode} onChange={handlePasswordChange} required placeholder="Enter 6-digit code" className="dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="newPassword">New Password</Label>
-                        <Input id="newPassword" name="newPassword" type="password" value={passwordForm.newPassword} onChange={handlePasswordChange} required placeholder="Enter new password"/>
+                        <Label htmlFor="newPassword" className="dark:text-gray-200">New Password</Label>
+                        <Input id="newPassword" name="newPassword" type="password" value={passwordForm.newPassword} onChange={handlePasswordChange} required placeholder="Enter new password" className="dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" />
                       </div>
                       <div className="flex space-x-2">
-                          <Button type="submit" disabled={loading.passwordChange}>{loading.passwordChange ? 'Changing...' : 'Change Password'}</Button>
-                           <Button type="button" variant="outline" onClick={() => { setPasswordStep(1); setMessage({type:'', text:''}); }}>Back</Button>
+                        <Button type="submit" disabled={loading.passwordChange}>{loading.passwordChange ? 'Changing...' : 'Change Password'}</Button>
+                        <Button type="button" variant="outline" onClick={() => { setPasswordStep(1); setMessage({type:'', text:''}); }}>Back</Button>
                       </div>
                     </form>
                   )}
                 </div>
-
-                <hr/>
-
+                
+                <hr className="border-gray-200 dark:border-gray-700" />
+                
                 {/* 2FA Section */}
                 <div className="space-y-4">
-                  <CardTitle>Two-Factor Authentication (2FA)</CardTitle>
+                  <CardTitle className="dark:text-gray-100">Two-Factor Authentication (2FA)</CardTitle>
+                
                   {!user.isTwoFactorEnabled && twoFactorStep === 'initial' && (
-                      <div>
-                          <CardDescription className="mb-4">Enhance your account security. You'll need an authenticator app like Google Authenticator or Authy.</CardDescription>
-                          <Button onClick={handleGenerate2FA} disabled={loading.twoFactorGenerate}>{loading.twoFactorGenerate ? 'Generating...' : 'Enable 2FA'}</Button>
-                      </div>
+                    <div>
+                      <CardDescription className="mb-4 dark:text-gray-300">Enhance your account security. You'll need an authenticator app like Google Authenticator or Authy.</CardDescription>
+                      <Button onClick={handleGenerate2FA} disabled={loading.twoFactorGenerate}>
+                        {loading.twoFactorGenerate ? 'Generating...' : 'Enable 2FA'}
+                      </Button>
+                    </div>
                   )}
+      
                   {twoFactorStep === 'verify' && (
-                      <form onSubmit={handleVerify2FA} className="space-y-4">
-                          <CardDescription>Scan the QR code with your authenticator app, then enter the 6-digit code below to complete setup.</CardDescription>
-                          <div className="flex justify-center p-4 bg-white rounded-lg border">
-                              {qrCodeUrl && <img src={qrCodeUrl} alt="2FA QR Code Setup" />}
-                          </div>
-                          <Label htmlFor="2fa-code">Verification Code</Label>
-                          <Input id="2fa-code" value={twoFactorCode} onChange={(e) => setTwoFactorCode(e.target.value)} placeholder="Enter 6-digit code" required />
-                          <div className="flex space-x-2">
-                             <Button type="submit" disabled={loading.twoFactorVerify}>{loading.twoFactorVerify ? 'Verifying...' : 'Verify & Enable'}</Button>
-                             <Button variant="outline" type="button" onClick={() => setTwoFactorStep('initial')}>Cancel</Button>
-                          </div>
-                      </form>
-                  )}
-                  {user.isTwoFactorEnabled && twoFactorStep === 'initial' && (
-                      <div>
-                           <div className="flex items-center p-3 rounded-md bg-green-50 text-green-800 border border-green-200 mb-4">
-                              <ShieldCheck className="h-5 w-5 mr-3"/>
-                              <p className="text-sm font-medium">Two-Factor Authentication is currently enabled.</p>
-                           </div>
-                          <Button variant="destructive" onClick={() => setTwoFactorStep('disable')}>Disable 2FA</Button>
+                    <form onSubmit={handleVerify2FA} className="space-y-4">
+                      <CardDescription className="dark:text-gray-300">Scan the QR code with your authenticator app, then enter the 6-digit code below to complete setup.</CardDescription>
+                      <div className="flex justify-center p-4 bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+                        {qrCodeUrl && <img src={qrCodeUrl} alt="2FA QR Code Setup" />}
                       </div>
+                      <Label htmlFor="2fa-code" className="dark:text-gray-200">Verification Code</Label>
+                      <Input id="2fa-code" value={twoFactorCode} onChange={(e) => setTwoFactorCode(e.target.value)} placeholder="Enter 6-digit code" required className="dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" />
+                      <div className="flex space-x-2">
+                        <Button type="submit" disabled={loading.twoFactorVerify}>{loading.twoFactorVerify ? 'Verifying...' : 'Verify & Enable'}</Button>
+                        <Button variant="outline" type="button" onClick={() => setTwoFactorStep('initial')}>Cancel</Button>
+                      </div>
+                    </form>
                   )}
+      
+                  {user.isTwoFactorEnabled && twoFactorStep === 'initial' && (
+                    <div>
+                      <div className="flex items-center p-3 rounded-md bg-green-50 dark:bg-green-900 text-green-800 dark:text-green-400 border border-green-200 dark:border-green-700 mb-4">
+                        <ShieldCheck className="h-5 w-5 mr-3"/>
+                        <p className="text-sm font-medium">Two-Factor Authentication is currently enabled.</p>
+                      </div>
+                      <Button variant="destructive" onClick={() => setTwoFactorStep('disable')}>Disable 2FA</Button>
+                    </div>
+                  )}
+      
                   {twoFactorStep === 'disable' && (
-                       <form onSubmit={handleDisable2FA} className="space-y-4">
-                          <CardDescription>To disable 2FA, please enter a valid code from your authenticator app.</CardDescription>
-                          <Label htmlFor="disable-2fa-code">Current Authentication Code</Label>
-                          <Input id="disable-2fa-code" value={twoFactorCode} onChange={(e) => setTwoFactorCode(e.target.value)} placeholder="Enter 6-digit code" required />
-                          <div className="flex space-x-2">
-                             <Button type="submit" variant="destructive" disabled={loading.twoFactorDisable}>{loading.twoFactorDisable ? 'Disabling...' : 'Confirm & Disable'}</Button>
-                             <Button variant="outline" type="button" onClick={() => setTwoFactorStep('initial')}>Cancel</Button>
-                          </div>
-                      </form>
+                    <form onSubmit={handleDisable2FA} className="space-y-4">
+                      <CardDescription className="dark:text-gray-300">To disable 2FA, please enter a valid code from your authenticator app.</CardDescription>
+                      <Label htmlFor="disable-2fa-code" className="dark:text-gray-200">Current Authentication Code</Label>
+                      <Input id="disable-2fa-code" value={twoFactorCode} onChange={(e) => setTwoFactorCode(e.target.value)} placeholder="Enter 6-digit code" required className="dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" />
+                      <div className="flex space-x-2">
+                        <Button type="submit" variant="destructive" disabled={loading.twoFactorDisable}>{loading.twoFactorDisable ? 'Disabling...' : 'Confirm & Disable'}</Button>
+                        <Button variant="outline" type="button" onClick={() => setTwoFactorStep('initial')}>Cancel</Button>
+                      </div>
+                    </form>
                   )}
                 </div>
               </div>
             )}
-
+      
             {activeTab === 'invite' && user.role === 'admin' && (
               <div className="space-y-6">
-                  <CardTitle>Invite a New Admin or Editor</CardTitle>
-                  <CardDescription>
-                      An invitation with a temporary username and password will be sent to the email address you provide.
-                  </CardDescription>
-                  <form onSubmit={handleInviteSubmit} className="space-y-4">
-                      <div className="space-y-2">
-                          <Label htmlFor="invite-email">Email Address</Label>
-                          <Input 
-                              id="invite-email" 
-                              name="email"
-                              type="email" 
-                              value={inviteForm.email} 
-                              onChange={handleInviteChange}
-                              placeholder="new.admin@example.com"
-                              required 
-                          />
-                      </div>
-                      <div className="space-y-2">
-                          <Label htmlFor="invite-role">Assign Role</Label>
-                          <select 
-                              id="invite-role" 
-                              name="role"
-                              value={inviteForm.role}
-                              onChange={handleInviteChange}
-                              className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                          >
-                              <option value="editor">Editor</option>
-                              <option value="admin">Admin</option>
-                          </select>
-                      </div>
-                      <Button type="submit" disabled={loading.invite} className="w-full sm:w-auto">
-                          {loading.invite ? 'Sending...' : 'Send Invitation'}
-                      </Button>
-                  </form>
+                <CardTitle className="dark:text-gray-100">Invite a New Admin or Editor</CardTitle>
+                <CardDescription className="dark:text-gray-300">
+                  An invitation with a temporary username and password will be sent to the email address you provide.
+                </CardDescription>
+                <form onSubmit={handleInviteSubmit} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="invite-email" className="dark:text-gray-200">Email Address</Label>
+                    <Input
+                      id="invite-email"
+                      name="email"
+                      type="email"
+                      value={inviteForm.email}
+                      onChange={handleInviteChange}
+                      placeholder="new.admin@example.com"
+                      required
+                      className="dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="invite-role" className="dark:text-gray-200">Assign Role</Label>
+                    <select
+                      id="invite-role"
+                      name="role"
+                      value={inviteForm.role}
+                      onChange={handleInviteChange}
+                      className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background dark:bg-gray-700 dark:border-gray-600 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:text-gray-100"
+                    >
+                      <option value="editor">Editor</option>
+                      <option value="admin">Admin</option>
+                    </select>
+                  </div>
+                  <Button type="submit" disabled={loading.invite} className="w-full sm:w-auto">
+                    {loading.invite ? 'Sending...' : 'Send Invitation'}
+                  </Button>
+                </form>
               </div>
             )}
           </CardContent>
