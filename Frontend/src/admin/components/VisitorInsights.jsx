@@ -1,119 +1,126 @@
-import { useRef, useState, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import ReactECharts from "echarts-for-react";
+import * as api from '../../api';
 import "./VisitorInsights.css";
 
-const visitorData = {
-  "Loyal Customers": [320, 310, 280, 220, 200, 280, 330, 310, 280, 260, 230, 200],
-  "New Customers": [210, 230, 180, 100, 160, 290, 350, 320, 290, 260, 200, 150],
-  "Unique Customers": [270, 320, 290, 240, 210, 250, 320, 300, 270, 250, 220, 260],
+const getMonthName = (monthNumber) => {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return months[monthNumber - 1]; // monthNumber is 1-based
 };
 
-const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const formatDataForChart = (apiData) => {
+    const labels = [];
+    const counts = [];
+    const today = new Date();
+    
+    const dataMap = new Map();
+    apiData.forEach(item => {
+        // key like "2025-10"
+        const key = `${item.year}-${item.month}`;
+        dataMap.set(key, item.count);
+    });
+
+    for (let i = 11; i >= 0; i--) {
+        const date = new Date(today.getFullYear(), today.getMonth() - i, 1);
+        const year = date.getFullYear();
+        const month = date.getMonth() + 1;
+        const shortYear = year.toString().slice(-2);
+        
+        const label = `${getMonthName(month)} '${shortYear}`;
+        const key = `${year}-${month}`;
+        
+        labels.push(label);
+        counts.push(dataMap.get(key) || 0);
+    }
+    
+    return { labels, counts };
+};
+
 
 export default function VisitorInsights() {
-  const chartRef = useRef(null);
+    const [chartData, setChartData] = useState({ labels: [], counts: [] });
+    const [loading, setLoading] = useState(true);
 
-  const [legend, setLegend] = useState({
-    "Loyal Customers": true,
-    "New Customers": true,
-    "Unique Customers": true,
-  });
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const data = await api.getMonthlyActiveUsers();
+                const formattedData = formatDataForChart(data);
+                setChartData(formattedData);
+            } catch (error) {
+                console.error("Failed to fetch visitor insights:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
 
-  const handleLegendToggle = (name) => {
-    setLegend((prev) => ({ ...prev, [name]: !prev[name] }));
-    if (chartRef.current) {
-      const instance = chartRef.current.getEchartsInstance();
-      instance.dispatchAction({
-        type: "legendToggleSelect",
-        name,
-      });
-    }
-  };
-
-  const option = useMemo(() => {
-    return {
-      color: ["#8B5CF6", "#F43F5E", "#22C55E"],
-      tooltip: {
-        trigger: "axis",
-        axisPointer: {
-          lineStyle: { color: "#F43F5E" },
+    const option = {
+        color: ["#22C55E"],
+        tooltip: {
+            trigger: "axis",
+            axisPointer: {
+                lineStyle: { color: "#22C55E" },
+            },
         },
-      },
-      legend: { show: false },
-      grid: { top: 20, left: 10, right: 10, bottom: 20, containLabel: true },
-      xAxis: {
-        type: "category",
-        data: months,
-        axisTick: { show: false },
-        axisLine: { show: false },
-        axisLabel: {
-          fontSize: 12,
-          color: "#6b7280", // gray-500
+        legend: { show: false },
+        grid: { top: 20, left: 10, right: 10, bottom: 20, containLabel: true },
+        xAxis: {
+            type: "category",
+            data: chartData.labels,
+            axisTick: { show: false },
+            axisLine: { show: false },
+            axisLabel: {
+                fontSize: 12,
+                color: "#6b7280", // gray-500
+            },
         },
-      },
-      yAxis: {
-        type: "value",
-        axisLabel: {
-          fontSize: 12,
-          color: "#9ca3af", // gray-400
+        yAxis: {
+            type: "value",
+            axisLabel: {
+                fontSize: 12,
+                color: "#9ca3af", // gray-400
+                formatter: '{value}'
+            },
+            splitLine: {
+                lineStyle: { color: "#e5e7eb" }, // gray-200
+            },
         },
-        splitLine: {
-          lineStyle: { color: "#e5e7eb" }, // gray-200
-        },
-      },
-      series: [
-        {
-          name: "Loyal Customers",
-          type: "line",
-          data: visitorData["Loyal Customers"],
-          smooth: true,
-          symbol: "circle",
-          showSymbol: false,
-          lineStyle: { width: 4 },
-        },
-        {
-          name: "New Customers",
-          type: "line",
-          data: visitorData["New Customers"],
-          smooth: true,
-          symbol: "circle",
-          showSymbol: false,
-          lineStyle: { width: 4 },
-        },
-        {
-          name: "Unique Customers",
-          type: "line",
-          data: visitorData["Unique Customers"],
-          smooth: true,
-          symbol: "circle",
-          showSymbol: false,
-          lineStyle: { width: 4 },
-        },
-      ],
+        series: [
+            {
+                name: "Active Users",
+                type: "line",
+                data: chartData.counts,
+                smooth: true,
+                symbol: "circle",
+                showSymbol: false,
+                lineStyle: { width: 4 },
+                areaStyle: {
+                    color: 'rgba(34, 197, 94, 0.1)'
+                }
+            },
+        ],
     };
-  }, []);
 
-  return (
-    <div className="visitor-insights">
-      <h3 className="insights-title">Visitor Insights</h3>
-
-      <ReactECharts ref={chartRef} option={option} style={{ height: 220, width: "100%" }} />
-
-      <div className="custom-legend">
-        {Object.keys(legend).map((name, idx) => (
-          <button
-            key={name}
-            className={`legend-btn ${legend[name] ? "active" : ""}`}
-            onClick={() => handleLegendToggle(name)}
-          >
-            <span
-              className="legend-dot"
-              style={{ backgroundColor: option.color[idx] }}
-            ></span>
-            {name}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
+    return (
+        <div className="visitor-insights">
+            <h3 className="insights-title">Monthly Active Users (Last 12 Months)</h3>
+            
+            <div style={{ height: 260, width: "100%" }}>
+                {loading ? (
+                    <p style={{ textAlign: 'center', paddingTop: '100px', color: '#6b7280' }}>
+                        Loading Chart Data...
+                    </p>
+                ) : (
+                    <ReactECharts
+                        option={option}
+                        style={{ height: '100%', width: '100%' }}
+                        notMerge={true}
+                        lazyUpdate={true}
+                    />
+                )}
+            </div>
+        </div>
+    );
 }

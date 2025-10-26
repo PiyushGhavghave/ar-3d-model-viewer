@@ -84,6 +84,8 @@ export const disable2FA = (token) => client.post("/api/v1/2fa/disable", { token 
 
 export const getAdminStats = () => client.get("/api/v1/admin/stats");
 
+export const getMonthlyActiveUsers = () => client.get("/api/v1/admin/stats/monthly-active");
+
 export const getAllUsers = (page = 1) => client.get(`/api/v1/admin/users?page=${page}`);
 
 export const toggleUserStatus = (userId) => client.patch(`/api/v1/admin/users/${userId}/toggle-status`);
