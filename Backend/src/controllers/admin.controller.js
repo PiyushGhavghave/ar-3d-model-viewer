@@ -19,6 +19,47 @@ const getDashboardStats = asyncHandler(async (req, res) => {
     );
 });
 
+const getMonthlyActiveUsers = asyncHandler(async (req, res) => {
+    const today = new Date();
+    const twelveMonthsAgo = new Date(today.getFullYear(), today.getMonth() - 11, 1);
+
+    const data = await User.aggregate([
+        {
+            $match: {
+                $and: [
+                    { lastLogin: { $gte: twelveMonthsAgo } },
+                    { role: { $ne: 'admin' } }
+                ]
+            }
+        },
+        {
+            $group: {
+                _id: {
+                    year: { $year: "$lastLogin" },
+                    month: { $month: "$lastLogin" }
+                },
+                users: { $addToSet: "$_id" }
+            }
+        },
+        {
+            $project: {
+                _id: 0,
+                year: "$_id.year",
+                month: "$_id.month",
+                count: { $size: "$users" }
+            }
+        },
+        {
+            $sort: { year: 1, month: 1 }
+        }
+    ]);
+
+    res.status(200)
+    .json(
+        new apiResponse(200, data, "Monthly active user data fetched successfully")
+    );
+});
+
 const getAllUsersWithModelCount = asyncHandler(async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 20;
@@ -229,4 +270,5 @@ export {
     inviteAdminOrEditor,
     inviteUser,
     updateUserByAdminOrEditor,
+    getMonthlyActiveUsers,
 };
