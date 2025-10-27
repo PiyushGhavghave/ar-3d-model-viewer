@@ -8,7 +8,6 @@ import './Header.css';
 import Magnifier from '../assets/icons/magnifier.svg'
 import USAFlag from '../assets/icons/United.svg'
 import Notifications from '../assets/icons/notification-line.svg'
-import ThemeToggle from './ThemeToggle';
 
 const Header = () => {
   const { user } = useAuth();
@@ -91,7 +90,6 @@ const Header = () => {
             <span className="dropdown-arrow">▼</span>
           </div>
 
-          <ThemeToggle />
           
           <div className="notifications" ref={dropdownRef}>
             <button onClick={handleNotificationClick} className="notification-button">

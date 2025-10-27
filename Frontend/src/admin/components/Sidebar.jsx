@@ -7,6 +7,7 @@ import DashboardIcon from '../assets/icons/sidebar-icons/Graph 1.svg';
 import UsersIcon from '../assets/icons/sidebar-icons/Group.svg';
 import SignOutIcon from '../assets/icons/sidebar-icons/Group 923.svg';
 import profileIcon from '../assets/icons/sidebar-icons/profile-1341-svgrepo-com.svg';
+import ThemeToggle from './ThemeToggle';
 
 
 const Sidebar = () => {
@@ -49,6 +50,10 @@ const Sidebar = () => {
             <span className="nav-text">Sign Out</span>
         </div>
       </nav>
+
+      <div className="sidebar-footer">
+        <ThemeToggle />
+      </div>
     </div>
   );
 };

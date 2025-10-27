@@ -69,6 +69,12 @@
   font-size: 14px;
 }
 
+.sidebar-footer {
+  margin-top: auto; /* This pushes the footer to the bottom */
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+}
 
 
 
